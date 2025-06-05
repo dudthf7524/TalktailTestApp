@@ -114,12 +114,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 24,
+    alignItems: 'center',
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
     marginTop: 24,
+    width: '90%',
+    maxWidth: 400,
   },
   profileImageWrapper: {
     width: 64,
@@ -158,15 +161,21 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E0E0E0',
     marginVertical: 16,
+    width: '90%',
+    maxWidth: 400,
   },
   sectionTitle: {
     color: '#F0663F',
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 8,
+    width: '90%',
+    maxWidth: 400,
   },
   menuSection: {
     marginBottom: 8,
+    width: '90%',
+    maxWidth: 400,
   },
   menuItem: {
     flexDirection: 'row',
@@ -189,9 +198,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 16,
     marginBottom: 8,
+    width: '90%',
+    maxWidth: 400,
   },
   supportSection: {
     marginBottom: 24,
+    width: '90%',
+    maxWidth: 400,
   },
   supportEmail: {
     fontSize: 15,
@@ -203,7 +216,8 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   logout_btn: {
-    width: "50%",
+    width: '90%',
+    maxWidth: 400,
     height: 35,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,

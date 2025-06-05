@@ -278,30 +278,37 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
     padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    marginTop: 60,
     marginBottom: 40,
+    width: '100%',
   },
   logo: {
     width: '80%',
     height: 100,
+    resizeMode: 'contain',
     marginBottom: 4
   },
   subtitle: {
     fontSize: 14,
     color: '#F5B75C',
+    textAlign: 'center',
   },
   form: {
-    flex: 1,
+    width: '90%',
+    maxWidth: 400,
   },
   inputGroup: {
     marginBottom: 20,
+    width: '100%',
   },
   label: {
     fontSize: 16,
@@ -317,6 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#FFFFFF',
     color: '#333333',
+    width: '100%',
   },
   errorText: {
     color: '#FF3B30',
@@ -329,6 +337,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 24,
+    width: '100%',
   },
   submitButtonText: {
     color: '#FFFFFF',
@@ -342,6 +351,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderWidth: 1,
     borderColor: '#F0663F',
+    width: '100%',
   },
   signUpButtonText: {
     color: '#F0663F',
@@ -353,6 +363,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 15,
+    width: '100%',
   },
   termsText: {
     color: '#666',

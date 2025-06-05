@@ -4,6 +4,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { orgStore } from '../store/orgStore';
 import AlertModal from './modal/alertModal';
 import MessageModal from './modal/messageModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   title: string;
@@ -57,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
  
 
   return (
+    <SafeAreaView>
     <View style={styles.header}>
       <Pressable 
         style={({ pressed }) => [
@@ -117,6 +119,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         content={modalContent.content}
       />
       </View>
+      </SafeAreaView>
   );
 };
 

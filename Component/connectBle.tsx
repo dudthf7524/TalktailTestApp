@@ -493,9 +493,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   monitorBox: {
-    width: '100%',
+    width: '90%',
+    maxWidth: 400,
     height: 300,
     backgroundColor: '#F5B75C',
     borderRadius: 10,
@@ -505,12 +507,14 @@ const styles = StyleSheet.create({
   },
   deviceList: {
     flex: 1,
+    width: '100%',
   },
   deviceListContent: {
     alignItems: 'center',
+    paddingVertical: 10,
   },
   deviceItem: {
-    width: '90%',
+    width: '100%',
     padding: 20,
     height: 70,
     marginVertical: 8,
@@ -541,6 +545,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     marginBottom: 10,
+    width: '90%',
+    maxWidth: 400,
   },
   disconnectButton: {
     backgroundColor: '#F5B75C',
@@ -550,6 +556,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
+    width: '90%',
+    maxWidth: 400,
   },
   buttonText: {
     color: 'white',

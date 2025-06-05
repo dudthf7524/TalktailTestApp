@@ -24,22 +24,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-
-	<!-- 앱 권한 관련 -->
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>이 앱은 Bluetooth 기능을 사용하여 기기와 통신합니다.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>BLE 스캔을 위해 위치 접근 권한이 필요합니다.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>BLE 기능을 항상 사용하기 위해 위치 권한이 필요합니다.</string>
-
-	<!-- 백그라운드에서 BLE 사용 (선택 사항) -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>bluetooth-central</string>
-	</array>
-
-	<!-- ATS 설정 -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -59,8 +43,16 @@
 			</dict>
 		</dict>
 	</dict>
-
-	<!-- 기타 설정 -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>이 앱은 Bluetooth 기능을 사용하여 기기와 통신합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>BLE 기능을 항상 사용하기 위해 위치 권한이 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BLE 스캔을 위해 위치 접근 권한이 필요합니다.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
