@@ -16,6 +16,15 @@ interface DeviceStore {
   loginLoading: boolean;
   loginError: string | null;
   loginSuccess: boolean;
+  findIDLoading: boolean;
+  findIDError: string | null;
+  findIDSuccess: boolean;
+  findPasswordLoading: boolean;
+  findPasswordError: string | null;
+  findPasswordSuccess: boolean;
+  changePasswordLoading: boolean;
+  changePasswordError: string | null;
+  changePasswordSuccess: boolean;
   checkCode: (deviceCode: string) => Promise<void>;
   signup: (params: {
     deviceCode: string;
@@ -29,7 +38,7 @@ interface DeviceStore {
     smsAgreed: boolean;
     emailAgreed: boolean;
     pushAgreed: boolean;
-  }) => Promise<void>; 
+  }) => Promise<void>;
   offSignupSuccess: () => void;
   offSignupError: () => void;
   offCheckSuccess: () => void;
@@ -40,6 +49,14 @@ interface DeviceStore {
   login: (data: { id: string; password: string }) => Promise<void>;
   offLoginSuccess: () => void;
   offLoginError: () => void;
+  findID: (deviceCode: string) => Promise<void>;
+  offFindIDSuccess: () => void;
+  offFindIDError: () => void;
+  offFindPasswordSuccess: () => void;
+  offFindPasswordError: () => void;
+  findPassword: (data: { deviceCode: string; id: string }) => Promise<void>;
+  changePassword: (data: { deviceCode: string; id: string; newPassword: string }) => Promise<void>;
+  ofChangePasswordSuccess: () => void;
 }
 
 export const deviceStore = create<DeviceStore>((set, get) => ({
@@ -55,11 +72,20 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
   loginLoading: false,
   loginError: null,
   loginSuccess: false,
+  findIDLoading: false,
+  findIDError: null,
+  findIDSuccess: false,
+  findPasswordLoading: false,
+  findPasswordError: null,
+  findPasswordSuccess: false,
+  changePasswordLoading: false,
+  changePasswordError: null,
+  changePasswordSuccess: false,
   checkCode: async (deviceCode: string) => {
     try {
       set({ checkLoading: true, checkError: null });
       const response = await axios.post(`${API_URL}/device/check`, { deviceCode });
-      
+
       if (response.status === 200) {
         set({ checkSuccess: true, checkLoading: false, checkError: null });
         const token = await getToken();
@@ -67,7 +93,7 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
           throw new Error('토큰이 없습니다.');
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       set({
         checkError: error.response.data.message,
         checkLoading: false
@@ -75,18 +101,18 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
       throw new Error();
     }
   },
-  signup: async ({ 
-    deviceCode, 
-    org_name, 
-    org_address, 
-    org_id, 
-    org_pw, 
-    org_phone, 
+  signup: async ({
+    deviceCode,
+    org_name,
+    org_address,
+    org_id,
+    org_pw,
+    org_phone,
     org_email,
     marketingAgreed,
     smsAgreed,
     emailAgreed,
-    pushAgreed 
+    pushAgreed
   }) => {
     try {
       set({ signupLoading: true, signupError: null, signupSuccess: false });
@@ -104,11 +130,11 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
         pushAgreed
       });
       if (response.status === 201) {
-        set({ signupLoading: false, signupError: null, signupSuccess: true, checkSuccess:false });
+        set({ signupLoading: false, signupError: null, signupSuccess: true, checkSuccess: false });
       } else {
         set({ signupLoading: false, signupError: response.data.message, signupSuccess: false });
       }
-    } catch (error) {
+    } catch (error: any) {
       set({ signupLoading: false, signupError: error.response.data.message, signupSuccess: false });
       throw new Error();
     }
@@ -135,7 +161,7 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
       } else {
         set({ checkIDSuccess: false, checkIDLoading: false, checkIDError: response.data.message });
       }
-    } catch(error) {
+    } catch (error: any) {
       set({
         checkIDError: error.response.data.message,
         checkIDLoading: false
@@ -160,13 +186,13 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
       }
     } catch (error: any) {
       let errorMessage = '로그인에 실패했습니다.';
-      
+
       if (error.message === 'Network Error') {
         errorMessage = '네트워크 연결을 확인해주세요.';
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
+
       set({
         loginLoading: false,
         loginSuccess: false,
@@ -177,4 +203,62 @@ export const deviceStore = create<DeviceStore>((set, get) => ({
   },
   offLoginSuccess: () => set({ loginSuccess: false }),
   offLoginError: () => set({ loginError: null }),
+
+  findID: async (deviceCode: string) => {
+    try {
+      set({ findIDLoading: true, findIDError: null });
+      const response = await axios.post(`${API_URL}/user/find/id`, { deviceCode });
+      if (response.status === 200) {
+        set({ findIDSuccess: true, findIDLoading: false, findIDError: response.data.org_id })
+      }
+    } catch (error: any) {
+      set({
+        findIDError: error.response.data.message,
+        findIDLoading: false
+      });
+      throw new Error();
+    }
+  },
+  offFindIDSuccess: () => set({ findIDSuccess: false }),
+  offFindIDError: () => set({ findIDError: null }),
+
+  findPassword: async ({ deviceCode, id }) => {
+    console.log(deviceCode)
+    console.log(id)
+    try {
+      set({ findPasswordLoading: true, findPasswordError: null });
+      const response = await axios.post(`${API_URL}/user/find/password`, { deviceCode, id });
+      console.log(response.status)
+      if (response.status === 200) {
+        set({ findPasswordSuccess: true, findPasswordLoading: false })
+      }
+    } catch (error: any) {
+      set({
+        findPasswordError: error.response.data.message,
+        findPasswordLoading: false
+      });
+      throw new Error();
+    }
+  },
+  offFindPasswordSuccess: () => set({ findPasswordSuccess: false }),
+  offFindPasswordError: () => set({ findPasswordError: null }),
+
+  changePassword: async ({ deviceCode, id, newPassword }) => {
+    try {
+      set({ changePasswordLoading: true, changePasswordError: null });
+      const response = await axios.post(`${API_URL}/user/change/password`, { deviceCode, id, newPassword });
+      console.log(response.status)
+      if (response.status === 200) {
+        set({ changePasswordSuccess: true, changePasswordLoading: false })
+      }
+    } catch (error: any) {
+      set({
+        changePasswordError: error.response.data.message,
+        changePasswordLoading: false
+      });
+      throw new Error();
+    }
+  },
+  ofChangePasswordSuccess: () => set({ changePasswordSuccess: false }),
+  // offFindPasswordError: () => set({ findPasswordError: null }),
 }));

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -6,20 +6,29 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from 'react-native';
 import Header from './header';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ConfirmModal from './modal/confirmModal';
 import MessageModal from './modal/messageModal';
+import PasswordConfirmModal from './modal/passwordConfirmModal';
 import { orgStore } from '../store/orgStore';
 import { removeToken } from '../utils/token';
+import Footer from './footer';
+import axios from 'axios';
+import { API_URL } from './constant/contants';
+import { getToken } from '../utils/storage';
 
 type RootStackParamList = {
   MypageChangeInfo: undefined;
   MypageChangePW: undefined;
+  MypageAgree: undefined;
   Login: undefined;
-  // Add other screens as needed
+  Board: undefined;
+  MypageOut: undefined;
+  CustomerService: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -28,8 +37,15 @@ const Mypage = () => {
   const navigation = useNavigation<NavigationProp>();
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [openMessageModal, setOpenMessageModal] = useState(false);
-  const { logout } = orgStore();
-  const handleLogout = async() => {
+  const [openPasswordModal, setOpenPasswordModal] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const { org, logout, loadOrg, verifyPassword } = orgStore();
+
+  useEffect(() => {
+    loadOrg();
+  }, []);
+
+  const handleLogout = async () => {
     try {
       await logout();
       await removeToken();
@@ -37,15 +53,37 @@ const Mypage = () => {
       setTimeout(() => {
         navigation.navigate('Login');
       }, 2000);
-    } catch(error) {
+    } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handlePasswordConfirm = async (password: string) => {
+    console.log(password)
+    const token = await getToken();
+    console.log(token)
+
+    try {
+      const response = await axios.post(`${API_URL}/user/check/password`, { token, password })
+      console.log(response.status)
+      if (response.status === 200) {
+        console.log(response.data.message)
+        setPasswordError('');
+        navigation.navigate('MypageChangeInfo')
+        setOpenPasswordModal(false)
+      } else {
+        setPasswordError('비밀번호가 일치하지 않습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <>
-      <Header title="마이페이지"/>
-      <SafeAreaView style={styles.container}>
+      <Header title="마이페이지" />
+      <ScrollView style={styles.container}>
         <View style={styles.profileSection}>
           <View style={styles.profileImageWrapper}>
             <Image
@@ -55,41 +93,48 @@ const Mypage = () => {
           </View>
           <View style={styles.profileInfo}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.profileName}>홍길동님</Text>
-              <TouchableOpacity onPress={() => setOpenConfirmModal(true)}>
-                <Text style={styles.logoutText}>로그아웃</Text>
-              </TouchableOpacity>
+              <Text style={styles.profileName}>{org.org_name}님</Text>
             </View>
-            <Text style={styles.profileEmail}>hong123@gmail.com</Text>
+            <Text style={styles.profileEmail}>{org.org_email}</Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.sectionTitle}>나의 정보</Text>
+        <Text style={styles.sectionTitle}>정보</Text>
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageChangeInfo')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => setOpenPasswordModal(true)}>
             <Text style={styles.menuText}>회원정보 수정</Text>
-            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow}/>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageChangePW')}>
             <Text style={styles.menuText}>비밀번호 변경</Text>
-            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow}/>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageAgree')}>
-            <Text style={styles.menuText}>알림 설정</Text>
-            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow}/>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Board')}>
+            <Text style={styles.menuText}>공지 사항</Text>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.supportTitle}>고객지원</Text>
-        <View style={styles.supportSection}>
-          <Text style={styles.supportEmail}>talktail@creamoff.co.kr</Text>
-          <Text style={styles.supportPhone}>010-4898-5955</Text>
+        <Text style={styles.sectionTitle}>설정</Text>
+        <View style={styles.menuSection}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageAgree')}>
+            <Text style={styles.menuText}>수신 동의 설정</Text>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageOut')}>
+            <Text style={styles.menuText}>개인 설정</Text>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('CustomerService')}>
+            <Text style={styles.menuText}>고객센터</Text>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
+          </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </ScrollView>
       <ConfirmModal
         visible={openConfirmModal}
         title="로그아웃"
@@ -105,6 +150,19 @@ const Mypage = () => {
         content="로그인 화면으로 이동됩니다."
         onClose={() => setOpenMessageModal(false)}
       />
+      <PasswordConfirmModal
+        visible={openPasswordModal}
+        title="비밀번호 확인"
+        content="비밀번호를 입력해주세요."
+        confirmText="확인"
+        cancelText="취소"
+        onClose={() => {
+          setOpenPasswordModal(false);
+          setPasswordError('');
+        }}
+        onConfirm={handlePasswordConfirm}
+        errorMessage={passwordError}
+      />
     </>
   );
 };
@@ -114,15 +172,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 24,
-    alignItems: 'center',
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    marginTop: 24,
-    width: '90%',
-    maxWidth: 400,
+    marginTop: 0,
   },
   profileImageWrapper: {
     width: 64,
@@ -161,21 +216,15 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E0E0E0',
     marginVertical: 16,
-    width: '90%',
-    maxWidth: 400,
   },
   sectionTitle: {
     color: '#F0663F',
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 8,
-    width: '90%',
-    maxWidth: 400,
   },
   menuSection: {
     marginBottom: 8,
-    width: '90%',
-    maxWidth: 400,
   },
   menuItem: {
     flexDirection: 'row',
@@ -198,13 +247,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 16,
     marginBottom: 8,
-    width: '90%',
-    maxWidth: 400,
   },
   supportSection: {
     marginBottom: 24,
-    width: '90%',
-    maxWidth: 400,
   },
   supportEmail: {
     fontSize: 15,
@@ -216,8 +261,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   logout_btn: {
-    width: '90%',
-    maxWidth: 400,
+    width: "50%",
     height: 35,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
@@ -233,7 +277,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "bold",
     color: "#F0663F",
-  }
+  },
+  businessInfoSection: {
+    marginBottom: 24,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    width: 100,
+    fontSize: 14,
+    color: '#666',
+  },
+  infoValue: {
+    flex: 1,
+    fontSize: 14,
+    color: '#222',
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+  },
 });
 
 export default Mypage; 

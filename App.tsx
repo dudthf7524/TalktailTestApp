@@ -17,6 +17,11 @@ import Mypage from './Component/mypage';
 import MypageChangeInfo from './Component/mypageChangeInfo';
 import MypageChangePW from './Component/mypageChangePW';
 import MypageAgree from './Component/mypageAgree';
+import MypageOut from './Component/mypageOut';
+import Board from './Component/board';
+import BoardDetail from './Component/boardDetail';
+import CustomerService from './Component/customerService';
+
 import { RootStackParamList } from './types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -26,7 +31,7 @@ const App = () => {
     <BLEProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Intro"
+          initialRouteName="Login"
           screenOptions={{
             headerShown: false,
             contentStyle: {
@@ -49,6 +54,10 @@ const App = () => {
           <Stack.Screen name="MypageChangeInfo" component={MypageChangeInfo} />
           <Stack.Screen name="MypageChangePW" component={MypageChangePW} />
           <Stack.Screen name="MypageAgree" component={MypageAgree} />
+          <Stack.Screen name="MypageOut" component={MypageOut} />
+          <Stack.Screen name="Board" component={Board} />
+          <Stack.Screen name="BoardDetail" component={BoardDetail} />
+          <Stack.Screen name="CustomerService" component={CustomerService} />
         </Stack.Navigator>
       </NavigationContainer>
     </BLEProvider>

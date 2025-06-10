@@ -1,20 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import Header from './header';
 import { orgStore } from '../store/orgStore';
+import AlertModal from './modal/alertModal';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
+import ConfirmModal from './modal/confirmModal';
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MypageAgree = () => {
-  const [marketingAgreed, setMarketingAgreed] = useState(false);
-  const [smsAgreed, setSmsAgreed] = useState(false);
-  const [emailAgreed, setEmailAgreed] = useState(false);
-  const [pushAgreed, setPushAgreed] = useState(false);
+  const navigation = useNavigation<NavigationProp>();
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const { agree, loadAgree, changeAgree, loadAgreeLoading, loadAgreeError, loadAgreeSuccess, offLoadAgreeSuccess, changeAgreeLoading, changeAgreeError, changeAgreeSuccess, offChangeAgreeSuccess } = orgStore();
+  const [marketingAgreed, setMarketingAgreed] = useState(agree.agree_marketing);
+  const [smsAgreed, setSmsAgreed] = useState(agree.agree_sms);
+  const [emailAgreed, setEmailAgreed] = useState(agree.agree_email);
+  const [pushAgreed, setPushAgreed] = useState(agree.agree_push);
   const [showMarketingFull, setShowMarketingFull] = useState(false);
-
-  const { agree, loadAgree, loadAgreeLoading, loadAgreeError, loadAgreeSuccess } = orgStore();
-
+  const [showAlert, setShowAlert] = useState(false);
+  
   useEffect(() => {
     loadAgree();
   }, []);
+
+  useEffect(() => {
+    setMarketingAgreed(agree.agree_marketing);
+    setSmsAgreed(agree.agree_sms);
+    setEmailAgreed(agree.agree_email);
+    setPushAgreed(agree.agree_push);
+  }, [agree]);
+
+  useEffect(() => {
+    if (changeAgreeSuccess) {
+      setShowAlert(true);
+      offChangeAgreeSuccess();
+    }
+  }, [changeAgreeSuccess]);
+
+  const handleAlertClose = () => {
+    setShowAlert(false);
+    offLoadAgreeSuccess();
+    loadAgree();
+  };
 
   const marketingPolicy = `마케팅 목적의 개인정보 수집 및 이용 동의
 
@@ -40,74 +68,115 @@ const MypageAgree = () => {
 
 - 동의를 거부하셔도 서비스 이용에는 제한이 없으며, 마케팅 및 프로모션 정보 제공이 제한됩니다.`;
 
+  const handleSubmit = async () => {
+    setOpenConfirmModal(false);
+    await changeAgree({
+      agree_marketing: marketingAgreed,
+      agree_sms: smsAgreed,
+      agree_email: emailAgreed,
+      agree_push: pushAgreed
+    });
+  }
   return (
-    <>
-    <Header title="알림 설정" />
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* 마케팅 목적 동의 */}
-      <Text style={styles.sectionTitle}>
-        마케팅 목적의 개인정보 수집 및 이용 동의
-        <Text
-          style={styles.link}
-          onPress={() => setShowMarketingFull(!showMarketingFull)}
-        >
-          {showMarketingFull ? ' 닫기' : ' 전문보기'}
-        </Text>
-      </Text>
-      {showMarketingFull && (
-        <View style={styles.fullTextBox}>
-          <Text style={styles.fullText}>
-          {marketingPolicy}
+   <>
+      <Header title="알림 설정" />
+      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.flex1}>
+        <ScrollView contentContainerStyle={styles.container}>
+          {/* 마케팅 목적 동의 */}
+          <Text style={styles.sectionTitle}>
+            마케팅 목적의 개인정보 수집 및 이용 동의
+            <Text
+              style={styles.link}
+              onPress={() => setShowMarketingFull(!showMarketingFull)}
+            >
+              {showMarketingFull ? ' 닫기' : ' 전문보기'}
+            </Text>
           </Text>
-        </View>
-      )}
-      <View style={styles.checkboxRow}>
-        <TouchableOpacity
-          style={[styles.checkbox, marketingAgreed && styles.checkboxChecked]}
-          onPress={() => setMarketingAgreed(!marketingAgreed)}
-        >
-          {marketingAgreed && <Text style={styles.checkmark}>✓</Text>}
-        </TouchableOpacity>
-        <Text style={styles.checkboxText}>
-          (선택) 마케팅 목적의 개인정보 수집 및 이용에 동의합니다.
-        </Text>
-      </View>
+          {showMarketingFull && (
+            <View style={styles.fullTextBox}>
+              <Text style={styles.fullText}>
+                {marketingPolicy}
+              </Text>
+            </View>
+          )}
+          <View style={styles.checkboxRow}>
+            <TouchableOpacity
+              style={[styles.checkbox, marketingAgreed && styles.checkboxChecked]}
+              onPress={() => setMarketingAgreed(!marketingAgreed)}
+            >
+              {marketingAgreed && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            <Text style={styles.checkboxText}>
+              (선택) 마케팅 목적의 개인정보 수집 및 이용에 동의합니다.
+            </Text>
+          </View>
 
-      {/* 광고성 정보 수신 동의 */}
-      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>광고성 정보 수신 동의</Text>
-      <View style={styles.checkboxRow}>
-        <TouchableOpacity
-          style={[styles.checkbox, smsAgreed && styles.checkboxChecked]}
-          onPress={() => setSmsAgreed(!smsAgreed)}
-        >
-          {smsAgreed && <Text style={styles.checkmark}>✓</Text>}
-        </TouchableOpacity>
-        <Text style={styles.checkboxText}>(선택) SMS 수신 동의</Text>
+          {/* 광고성 정보 수신 동의 */}
+          <Text style={[styles.sectionTitle, { marginTop: 24 }]}>광고성 정보 수신 동의</Text>
+          <View style={styles.checkboxRow}>
+            <TouchableOpacity
+              style={[styles.checkbox, smsAgreed && styles.checkboxChecked]}
+              onPress={() => setSmsAgreed(!smsAgreed)}
+            >
+              {smsAgreed && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            <Text style={styles.checkboxText}>(선택) SMS 수신 동의</Text>
+          </View>
+          <View style={styles.checkboxRow}>
+            <TouchableOpacity
+              style={[styles.checkbox, emailAgreed && styles.checkboxChecked]}
+              onPress={() => setEmailAgreed(!emailAgreed)}
+            >
+              {emailAgreed && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            <Text style={styles.checkboxText}>(선택) 이메일 수신 동의</Text>
+          </View>
+          <View style={styles.checkboxRow}>
+            <TouchableOpacity
+              style={[styles.checkbox, pushAgreed && styles.checkboxChecked]}
+              onPress={() => setPushAgreed(!pushAgreed)}
+            >
+              {pushAgreed && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            <Text style={styles.checkboxText}>(선택) 앱푸시 수신 동의</Text>
+          </View>
+          <View style={{ height: 80 }} />
+        </ScrollView>
+        <View style={styles.bottomButtonWrapper}>
+          <TouchableOpacity style={styles.saveButton} onPress={() => setOpenConfirmModal(true)}>
+            <Text style={styles.saveButtonText}>변경</Text>
+          </TouchableOpacity>
+        </View>
+        <AlertModal
+          visible={showAlert}
+          title="알림"
+          content="변경되었습니다."
+          onClose={handleAlertClose}
+        />
+        <ConfirmModal
+          visible={openConfirmModal}
+          onCancel={() => setOpenConfirmModal(false)}
+          onConfirm={handleSubmit}
+          title="알림"
+          content="설정을 변경하시겠습니까?"
+          confirmText="변경"
+          cancelText="취소"
+        />
       </View>
-      <View style={styles.checkboxRow}>
-        <TouchableOpacity
-          style={[styles.checkbox, emailAgreed && styles.checkboxChecked]}
-          onPress={() => setEmailAgreed(!emailAgreed)}
-        >
-          {emailAgreed && <Text style={styles.checkmark}>✓</Text>}
-        </TouchableOpacity>
-        <Text style={styles.checkboxText}>(선택) 이메일 수신 동의</Text>
-      </View>
-      <View style={styles.checkboxRow}>
-        <TouchableOpacity
-          style={[styles.checkbox, pushAgreed && styles.checkboxChecked]}
-          onPress={() => setPushAgreed(!pushAgreed)}
-        >
-          {pushAgreed && <Text style={styles.checkmark}>✓</Text>}
-        </TouchableOpacity>
-        <Text style={styles.checkboxText}>(선택) 앱푸시 수신 동의</Text>
-      </View>
-    </ScrollView>
+    </SafeAreaView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  flex1: {
+    flex: 1,
+  },
   container: {
     padding: 20,
     backgroundColor: '#fff',
@@ -167,6 +236,29 @@ const styles = StyleSheet.create({
     color: '#333',
     flexShrink: 1,
     flexWrap: 'wrap',
+  },
+  bottomButtonWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 10,
+
+  },
+  saveButton: {
+    backgroundColor: '#F0663F',
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
