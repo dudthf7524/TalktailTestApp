@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Header from './header';
 import { orgStore } from '../store/orgStore';
 import AlertModal from './modal/alertModal';
@@ -7,6 +7,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import ConfirmModal from './modal/confirmModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MypageAgree = () => {
@@ -80,7 +82,7 @@ const MypageAgree = () => {
   return (
    <>
       <Header title="알림 설정" />
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.flex1}>
         <ScrollView contentContainerStyle={styles.container}>
           {/* 마케팅 목적 동의 */}

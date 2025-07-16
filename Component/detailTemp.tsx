@@ -1,76 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import Svg, { Path, Line, Text as SvgText } from 'react-native-svg';
-import { tempDataLists, DataPoint } from './tempDummyDatas';
+import { useBLE } from './BLEContext';
+
+interface TempDataPoint {
+  value: number;
+  timestamp: number;
+}
 
 const DetailTemp = ({ tempData, screen }: { tempData: number, screen: string }) => {
-  const [data, setData] = useState<DataPoint[]>(tempDataLists);
+  const { state } = useBLE();
+  const { tempChartData } = state;
+  const [data, setData] = useState<TempDataPoint[]>([]);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = Math.max(screenWidth - 40, data.length * 50);
   const chartHeight = 200;
   const padding = 20;
+  const rightMargin = 20; // 데이터 오른쪽 여유공간
   const graphHeight = chartHeight - padding * 2;
 
-  // 2초마다 새로운 데이터 추가
+  // BLE 데이터를 차트 데이터로 변환
   useEffect(() => {
-    const interval = setInterval(() => {
-      const lastData = data[data.length - 1];
-      const lastKey = Object.keys(lastData)[0];
-      const [date, time] = lastKey.split('-');
-      
-      // 시간 증가 (2초)
-      const timeMatch = time.match(/.{1,2}/g);
-      if (!timeMatch) return;
-      
-      const [hours, minutes, seconds] = timeMatch;
-      let newSeconds = parseInt(seconds) + 2;
-      let newMinutes = parseInt(minutes);
-      let newHours = parseInt(hours);
-      
-      if (newSeconds >= 60) {
-        newSeconds = newSeconds % 60;
-        newMinutes += 1;
-      }
-      if (newMinutes >= 60) {
-        newMinutes = newMinutes % 60;
-        newHours += 1;
-      }
-      
-      const newTime = `${newHours.toString().padStart(2, '0')}${newMinutes.toString().padStart(2, '0')}${newSeconds.toString().padStart(2, '0')}`;
-      const newKey = `${date}-${newTime}`;
-      
-      // 새로운 온도값 생성 (이전 값에서 ±0.2 범위 내에서 랜덤하게)
-      const lastTemp = lastData[lastKey];
-      const randomChange = (Math.random() - 0.5) * 0.4; // -0.2 to 0.2
-      const newTemp = Math.round((lastTemp + randomChange) * 10) / 10; // 소수점 첫째자리까지
-      
-      setData(prevData => [...prevData, { [newKey]: newTemp }]);
-    }, 2000);
+    console.log('tempChartData : ', tempChartData);
+    if (!isAutoScrolling || !tempChartData || tempChartData.length === 0) return;
 
-    return () => clearInterval(interval);
-  }, [data]);
+    // 유효한 데이터만 필터링 (timestamp가 0이 아니고 value가 0이 아닌 데이터)
+    const validData = tempChartData.filter(item => 
+      item.timestamp > 0 && item.value > 0
+    );
+    
+    setData(validData);
+  }, [tempChartData, isAutoScrolling]);
 
   // 데이터가 업데이트될 때마다 스크롤을 오른쪽 끝으로 이동 (자동 스크롤이 활성화된 경우에만)
   useEffect(() => {
-    if (scrollViewRef.current && isAutoScrolling) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
+    if (scrollViewRef.current && isAutoScrolling && data.length > 0) {
+      scrollViewRef.current.scrollToEnd({ animated: false }); // 애니메이션 비활성화로 성능 최적화
     }
   }, [data, isAutoScrolling]);
 
-  // 데이터 정규화
-  const values = data.map(item => Object.values(item)[0]);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const valueRange = maxValue - minValue;
+  // 데이터 정규화 - 더 안전한 계산
+  const values = data.map(item => item.value).filter(val => val > 0);
+  const minValue = values.length > 0 ? Math.min(...values) : 0;
+  const maxValue = values.length > 0 ? Math.max(...values) : 40; // 기본 온도 범위
+  const valueRange = Math.max(maxValue - minValue, 1); // 최소값을 1로 설정
 
   // SVG Path 생성
   const createPath = () => {
+    if (data.length === 0) return '';
+    
     const points = data.map((item, index) => {
-      const value = Object.values(item)[0];
-      const x = (index / (data.length - 1)) * (chartWidth - padding * 2) + padding;
-      const y = chartHeight - padding - ((value - minValue) / valueRange) * graphHeight;
+      const value = item.value;
+      const x = data.length === 1 
+        ? chartWidth / 2 
+        : (index / Math.max(data.length - 1, 1)) * (chartWidth - padding * 2 - rightMargin) + padding;
+      const y = padding + ((maxValue - value) / valueRange) * graphHeight;
       return `${x},${y}`;
     });
     return `M ${points.join(' L ')}`;
@@ -78,7 +64,7 @@ const DetailTemp = ({ tempData, screen }: { tempData: number, screen: string }) 
 
   // Y축 레이블 생성
   const yLabels = Array.from({ length: 6 }, (_, i) => {
-    const value = minValue + (valueRange * i) / 5;
+    const value = maxValue - (valueRange * i) / 5; // 큰 값부터 작은 값 순서로
     return value.toFixed(1);
   });
 
@@ -125,10 +111,27 @@ const DetailTemp = ({ tempData, screen }: { tempData: number, screen: string }) 
               />
               
               {/* 데이터 포인트 */}
-              {data.map((item, index) => {
-                const value = Object.values(item)[0];
-                const x = (index / (data.length - 1)) * (chartWidth - padding * 2) + padding;
-                const y = chartHeight - padding - ((value - minValue) / valueRange) * graphHeight;
+              {data.length > 0 && data.map((item, index) => {
+                const value = item.value;
+                
+                // 유효하지 않은 데이터는 건너뛰기
+                if (value <= 0 || item.timestamp <= 0) {
+                  return null;
+                }
+                
+                // x 좌표 계산 수정
+                const x = data.length === 1 
+                  ? chartWidth / 2 
+                  : (index / Math.max(data.length - 1, 1)) * (chartWidth - padding * 2 - rightMargin) + padding;
+                
+                // y 좌표 계산 수정
+                const y = padding + ((maxValue - value) / valueRange) * graphHeight;
+                
+                // NaN 체크 추가
+                if (isNaN(x) || isNaN(y)) {
+                  return null;
+                }
+                
                 return (
                   <View key={index}>
                     <View
@@ -151,11 +154,27 @@ const DetailTemp = ({ tempData, screen }: { tempData: number, screen: string }) 
                         },
                       ]}
                     >
-                      {Object.keys(item)[0].split('-')[1].substring(2, 6).replace(/(\d{2})(\d{2})/, '$1:$2')}
+                      {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                     </Text>
                   </View>
                 );
               })}
+              
+              {/* 데이터가 없을 때 메시지 */}
+              {data.length === 0 && (
+                <Text
+                  style={{
+                    position: 'absolute',
+                    left: chartWidth / 2 - 50,
+                    top: chartHeight / 2,
+                    fontSize: 14,
+                    color: '#666',
+                    textAlign: 'center'
+                  }}
+                >
+                  온도 데이터를 기다리는 중...
+                </Text>
+              )}
             </Svg>
           </ScrollView>
         </View>
@@ -224,7 +243,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   xAxisLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#262626',
     width: 40,
     textAlign: 'center',
@@ -244,4 +263,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DetailTemp; 
+export default DetailTemp;

@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Image, Modal, TouchableWithoutFeedba
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { orgStore } from '../store/orgStore';
 import { deviceStore } from '../store/deviceStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 interface HeaderProps {
   title: string;
 }
@@ -13,7 +14,7 @@ const HeaderSignup: React.FC<HeaderProps> = ({ title }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const { logout } = orgStore();
   const { offCheckSuccess } = deviceStore();
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     try {
       await logout();
       navigation.navigate('Login');
@@ -23,41 +24,43 @@ const HeaderSignup: React.FC<HeaderProps> = ({ title }) => {
   }
 
   return (
-    <View style={styles.header}>
-      <Pressable 
-        style={({ pressed }) => [
-          styles.backButton,
-          pressed && styles.pressedButton
-        ]}
-        onPress={() => { 
-          offCheckSuccess();
-          navigation.goBack()
-        }}
-      >
-        <Image 
-          source={require('../assets/images/arrow_left.png')}
-          style={styles.backButtonImage}
-        />
-      </Pressable>
-      <Text style={styles.title}>{title}</Text> 
-     
-      {/* 메뉴바 모달 */}
-      <Modal
-        visible={menuVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMenuVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-          <View style={styles.modalOverlay} />
-        </TouchableWithoutFeedback>
-        <View style={styles.menuBarContainer}>
-          <Pressable style={styles.menuBar} onPress={handleLogout}>
-            <Text style={styles.menuText}>로그아웃</Text>
-          </Pressable>
-        </View>
-      </Modal>
-    </View>
+    <SafeAreaView edges={['top',]}>
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.backButton,
+            pressed && styles.pressedButton
+          ]}
+          onPress={() => {
+            offCheckSuccess();
+            navigation.goBack()
+          }}
+        >
+          <Image
+            source={require('../assets/images/arrow_left.png')}
+            style={styles.backButtonImage}
+          />
+        </Pressable>
+        <Text style={styles.title}>{title}</Text>
+
+        {/* 메뉴바 모달 */}
+        <Modal
+          visible={menuVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.menuBarContainer}>
+            <Pressable style={styles.menuBar} onPress={handleLogout}>
+              <Text style={styles.menuText}>로그아웃</Text>
+            </Pressable>
+          </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
     top: '35%',
     // transform: [{ translateX: -100 }],
   },
-  right_btn_text : {
+  right_btn_text: {
     fontSize: 40,
     fontWeight: '400',
     color: '#fff',

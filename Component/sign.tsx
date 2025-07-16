@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -15,6 +14,7 @@ import AlertModal from '../Component/modal/alertModal';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { deviceStore } from '../store/deviceStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Login: undefined;
@@ -94,7 +94,7 @@ const SignUp = ({ route }) => {
     }
   }, [checkSuccess]);
 
-  
+
   useEffect(() => {
     if (checkIDError) {
       setModalContent({
@@ -143,7 +143,7 @@ const SignUp = ({ route }) => {
     offSignupError();
   }, [signupError]);
 
-  
+
 
   const formatPhoneNumber = (text: string) => {
     const cleaned = text.replace(/\D/g, '');
@@ -172,7 +172,7 @@ const SignUp = ({ route }) => {
     if (!formData.org_id) {
       setErrors(prev => ({ ...prev, org_id: '아이디를 입력해주세요.' }));
       return;
-    }else if (formData.org_id.length < 4) {
+    } else if (formData.org_id.length < 4) {
       setErrors(prev => ({ ...prev, org_id: '아이디는 4자 이상이어야 합니다.' }));
       return;
     }
@@ -264,7 +264,7 @@ const SignUp = ({ route }) => {
   return (
     <>
       <HeaderSignup title="회원가입" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
@@ -275,16 +275,17 @@ const SignUp = ({ route }) => {
                 <Text style={styles.deviceLabel}>디바이스 코드</Text>
                 <View style={styles.idContainer}>
                   <TextInput
-                    style={[styles.input, styles.idInput, {backgroundColor : !checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                    style={[styles.input, styles.idInput, { backgroundColor: !checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                     value={formData.deviceCode}
                     onChangeText={(text) => {
                       setFormData(prev => ({ ...prev, deviceCode: text }));
                     }}
                     placeholder="디바이스 코드를 입력하세요"
+                    placeholderTextColor="#999999"
                     editable={!checkSuccess}
                   />
                   <TouchableOpacity
-                    style={[styles.checkButton, {backgroundColor : !checkSuccess ? '#F0663F' : '#bdbdbd'}]}
+                    style={[styles.checkButton, { backgroundColor: !checkSuccess ? '#F0663F' : '#bdbdbd' }]}
                     onPress={checkDeviceCode}
                     disabled={checkSuccess}
                   >
@@ -295,17 +296,18 @@ const SignUp = ({ route }) => {
                   <Text style={styles.errorText}>{errors.deviceCode}</Text>
                 )}
               </View>
-               {!checkSuccess && <Text style={{color : '#F0663F', marginBottom : 12, fontWeight:'bold'}}>코드 확인이 완료되면 아래 입력칸이 활성화됩니다.</Text>} 
+              {!checkSuccess && <Text style={{ color: '#F0663F', marginBottom: 12, fontWeight: 'bold' }}>코드 확인이 완료되면 아래 입력칸이 활성화됩니다.</Text>}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>기관명</Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.org_name}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, org_name: text }));
                     setErrors(prev => ({ ...prev, org_name: undefined }));
                   }}
                   placeholder="기관 이름을 입력하세요"
+                  placeholderTextColor="#999999"
                   editable={checkSuccess}
                 />
                 {errors.org_name && (
@@ -316,13 +318,14 @@ const SignUp = ({ route }) => {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>기관 주소</Text>
                 <TextInput
-                 style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.org_address}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, org_address: text }));
                     setErrors(prev => ({ ...prev, org_address: undefined }));
                   }}
                   placeholder="기관 주소를 입력하세요"
+                  placeholderTextColor="#999999"
                   editable={checkSuccess}
                 />
                 {errors.org_address && (
@@ -334,7 +337,7 @@ const SignUp = ({ route }) => {
                 <Text style={styles.label}>아이디</Text>
                 <View style={styles.idContainer}>
                   <TextInput
-                    style={[styles.input, styles.idInput, {backgroundColor : checkSuccess && !isIdChecked ? '#FFFFFF' : '#f5f5f5'}]}
+                    style={[styles.input, styles.idInput, { backgroundColor: checkSuccess && !isIdChecked ? '#FFFFFF' : '#f5f5f5' }]}
                     value={formData.org_id}
                     onChangeText={(text) => {
                       setFormData(prev => ({ ...prev, org_id: text }));
@@ -342,15 +345,16 @@ const SignUp = ({ route }) => {
                       setIsIdChecked(false);
                     }}
                     placeholder="아이디를 입력하세요"
+                    placeholderTextColor="#999999"
                     editable={checkSuccess && !isIdChecked}
                   />
                   <TouchableOpacity
-                    style={[styles.checkButton, {backgroundColor : checkSuccess && !isIdChecked ? '#F0663F' : '#bdbdbd'}]}
-                    disabled={ !checkSuccess }
+                    style={[styles.checkButton, { backgroundColor: checkSuccess && !isIdChecked ? '#F0663F' : '#bdbdbd' }]}
+                    disabled={!checkSuccess}
                     onPress={() => {
-                      if(checkSuccess) {
-                      checkIdDuplication();
-                    }
+                      if (checkSuccess) {
+                        checkIdDuplication();
+                      }
                     }}
                   >
                     <Text style={styles.checkButtonText}>중복확인</Text>
@@ -364,13 +368,14 @@ const SignUp = ({ route }) => {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>비밀번호</Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.org_pw}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, org_pw: text }));
                     setErrors(prev => ({ ...prev, org_pw: undefined }));
                   }}
                   placeholder="비밀번호를 입력하세요"
+                  placeholderTextColor="#999999"
                   secureTextEntry
                   editable={checkSuccess}
                 />
@@ -382,13 +387,14 @@ const SignUp = ({ route }) => {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>비밀번호 확인</Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.confirmPassword}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, confirmPassword: text }));
                     setErrors(prev => ({ ...prev, confirmPassword: undefined }));
                   }}
                   placeholder="비밀번호를 다시 입력하세요"
+                  placeholderTextColor="#999999"
                   secureTextEntry
                   editable={checkSuccess}
                 />
@@ -400,7 +406,7 @@ const SignUp = ({ route }) => {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>담당자 전화번호</Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.org_phone}
                   onChangeText={(text) => {
                     const formatted = formatPhoneNumber(text);
@@ -408,6 +414,7 @@ const SignUp = ({ route }) => {
                     setErrors(prev => ({ ...prev, org_phone: undefined }));
                   }}
                   placeholder="010-0000-0000"
+                  placeholderTextColor="#999999"
                   keyboardType="phone-pad"
                   maxLength={13}
                   editable={checkSuccess}
@@ -420,13 +427,14 @@ const SignUp = ({ route }) => {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>담당자 이메일</Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor : checkSuccess ? '#FFFFFF' : '#f5f5f5'}]}
+                  style={[styles.input, { backgroundColor: checkSuccess ? '#FFFFFF' : '#f5f5f5' }]}
                   value={formData.org_email}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, org_email: text }));
                     setErrors(prev => ({ ...prev, org_email: undefined }));
                   }}
                   placeholder="이메일을 입력하세요"
+                  placeholderTextColor="#999999"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   editable={checkSuccess}
@@ -436,7 +444,7 @@ const SignUp = ({ route }) => {
                 )}
               </View>
 
-              <TouchableOpacity style={[styles.submitButton, {backgroundColor : checkSuccess ? '#F0663F' : '#bdbdbd'}]} onPress={handleSubmit} disabled={!checkSuccess}>
+              <TouchableOpacity style={[styles.submitButton, { backgroundColor: checkSuccess ? '#F0663F' : '#bdbdbd' }]} onPress={handleSubmit} disabled={!checkSuccess}>
                 <Text style={styles.submitButtonText}>회원가입</Text>
               </TouchableOpacity>
             </View>

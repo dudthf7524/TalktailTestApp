@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import { SafeAreaView, ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from './header';
 import { boardStore } from '../store/boardStore';
 import dayjs from 'dayjs';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface BoardData {
   board_code: string;
@@ -57,7 +58,7 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 5;
 
 const Board = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -136,110 +137,61 @@ const Board = () => {
 
   return (
     <>
-      <Header title="게시판" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.decorationContainer}>
-          <View style={styles.decorationLine} />ㄴ
-          <View style={styles.decorationDot} />
-          <View style={styles.decorationLine} />
-        </View>
-        <View style={styles.boardHeader}>
-          <Text style={[styles.headerText, styles.numberColumn]}>번호</Text>
-          <Text style={[styles.headerText, styles.titleColumn]}>제목</Text>
-          <Text style={[styles.headerText, styles.dateColumn]}>작성일</Text>
-        </View>
+      <Header title="공지사항" />
+      <SafeAreaView style={styles.noticeContainer} edges={['bottom']}>
         <ScrollView style={styles.scrollView}>
-          <View style={styles.boardList}>
-            {currentPosts.map((list, index) => {
-              const displayNumber = boardLists.length - (startIndex + index);
-              return (
-                <TouchableOpacity 
-                  key={list.board_code}
-                  style={styles.boardRow}
-                  onPress={() => navigation.navigate('BoardDetail', { board_code: list.board_code })}
-                >
-                  <Text style={[styles.rowText, styles.numberColumn]}>{displayNumber}</Text>
-                  <Text style={[styles.rowText, styles.titleColumn]}>{list.title}</Text>
-                  <Text style={[styles.rowText, styles.dateColumn]}>{dayjs(list.createdAt).format("YYYY-MM-DD")}</Text>
-                </TouchableOpacity>
-              )
-            })}
+          <View style={styles.noticeList}>
+            {currentPosts.map((list) => (
+              <TouchableOpacity
+                key={list.board_code}
+                style={styles.noticeItem}
+                onPress={() => navigation.navigate('BoardDetail', { board_code: list.board_code })}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.noticeTitle} numberOfLines={2}>{list.title}</Text>
+                <Text style={styles.noticeDate}>{dayjs(list.createdAt).format('YYYY.MM.DD')}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </ScrollView>
-        <View style={styles.paginationContainer}>
-          {renderPageNumbers()}
-        </View>
+        <View style={styles.paginationContainer}>{renderPageNumbers()}</View>
       </SafeAreaView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  noticeContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
   },
-  decorationContainer: {
-    flexDirection: 'row',
+  noticeList: {
+    paddingHorizontal: 0,
     alignItems: 'center',
+  },
+  noticeItem: {
+    width: '90%',
+    height: 125,
+    borderColor: '#F5B75C',
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+
   },
-  decorationLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#F0663F',
-    opacity: 0.3,
+  noticeTitle: {
+    height: 42,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#222222',
+    marginBottom: 8,
   },
-  decorationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#F0663F',
-    marginHorizontal: 8,
-  },
-  boardHeader: {
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#F5B75C',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5B75C',
-  },
-  headerText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333333',
-    textAlign: 'center',
-  },
-  titleColumn: {
-    flex: 4,
-    textAlign: 'left',
-    paddingLeft: 16,
-  },
-  boardList: {
-    flex: 1,
-  },
-  boardRow: {
-    flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5B75C',
-    alignItems: 'center',
-  },
-  rowText: {
-    fontSize: 14,
-    color: '#333333',
-    textAlign: 'center',
-  },
-  numberColumn: {
-    width: 50,
-  },
-  dateColumn: {
-    width: 90,
+  noticeDate: {
+    fontSize: 13,
+    color: '#888888',
+    marginTop: 12,
   },
   paginationContainer: {
     flexDirection: 'row',
@@ -247,6 +199,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     gap: 8,
+    backgroundColor: '#FFFFFF',
   },
   pageNumber: {
     minWidth: 32,
@@ -254,11 +207,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
+    backgroundColor: '#F5F5F5',
     paddingHorizontal: 8,
   },
   navButton: {
-    backgroundColor: '#F5B75C',
+    backgroundColor: '#F5F5F5',
   },
   currentPageNumber: {
     backgroundColor: '#F0663F',

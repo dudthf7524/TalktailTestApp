@@ -16,7 +16,6 @@ import MessageModal from './modal/messageModal';
 import PasswordConfirmModal from './modal/passwordConfirmModal';
 import { orgStore } from '../store/orgStore';
 import { removeToken } from '../utils/token';
-import Footer from './footer';
 import axios from 'axios';
 import { API_URL } from './constant/contants';
 import { getToken } from '../utils/storage';
@@ -29,6 +28,7 @@ type RootStackParamList = {
   Board: undefined;
   MypageOut: undefined;
   CustomerService: undefined;
+  BatteryTest: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -100,8 +100,9 @@ const Mypage = () => {
         </View>
 
         <View style={styles.divider} />
-
-        <Text style={styles.sectionTitle}>정보</Text>
+        <View>
+          <Text style={styles.sectionTitle}>정보</Text>
+        </View>
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={() => setOpenPasswordModal(true)}>
             <Text style={styles.menuText}>회원정보 수정</Text>
@@ -115,11 +116,16 @@ const Mypage = () => {
             <Text style={styles.menuText}>공지 사항</Text>
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
+          {/* <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('BatteryTest')}>
+            <Text style={styles.menuText}>배터리 표시</Text>
+            <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.divider} />
-
-        <Text style={styles.sectionTitle}>설정</Text>
+        <View>
+          <Text style={styles.sectionTitle}>설정</Text>
+        </View>
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MypageAgree')}>
             <Text style={styles.menuText}>수신 동의 설정</Text>
@@ -134,7 +140,7 @@ const Mypage = () => {
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </ScrollView >
       <ConfirmModal
         visible={openConfirmModal}
         title="로그아웃"

@@ -10,13 +10,13 @@ type IRDataPoint = {
 
 const DetailHeart = ({ screen }: { screen: string }) => {
   const { state } = useBLE();
-  const { chartData } = state;
+  const { irChartData } = state;
   const [data, setData] = useState<IRDataPoint[]>([]);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const screenWidth = Dimensions.get('window').width;
-  const pointsPerView = 50;
+  const pointsPerView = 100;
   const pointWidth = screenWidth / pointsPerView;
   const chartWidth = Math.max(screenWidth, pointsPerView * pointWidth);
   const chartHeight = 200;
@@ -60,11 +60,11 @@ const DetailHeart = ({ screen }: { screen: string }) => {
   // BLE 데이터를 그래프 데이터로 변환
   useEffect(() => {
     try {
-      if (!isAutoScrolling || !chartData || !Array.isArray(chartData) || chartData.length === 0) return;
+      if (!isAutoScrolling || !irChartData || !Array.isArray(irChartData) || irChartData.length === 0) return;
 
       // 데이터 포인트 수를 줄임 (모든 포인트를 사용하지 않고 일부만 사용)
-      const step = Math.max(1, Math.floor(chartData.length / 50));
-      const newDataPoints: IRDataPoint[] = chartData
+      const step = Math.max(1, Math.floor(irChartData.length / 100));
+      const newDataPoints: IRDataPoint[] = irChartData
         .filter((_, index) => index % step === 0) // 데이터 포인트 샘플링
         .filter(value => typeof value === 'number' && !isNaN(value) && isFinite(value))
         .map((value, index) => ({
@@ -74,13 +74,13 @@ const DetailHeart = ({ screen }: { screen: string }) => {
 
       setData(prevData => {
         const updatedData = [...prevData, ...newDataPoints];
-        // 최대 50개의 데이터 포인트만 유지
-        return updatedData.slice(-50);
+        // 최대 100개의 데이터 포인트만 유지
+        return updatedData.slice(-100);
       });
     } catch (error) {
       console.error('Error processing BLE data:', error);
     }
-  }, [chartData, isAutoScrolling]);
+  }, [irChartData, isAutoScrolling]);
 
   // 자동 스크롤 효과 - 애니메이션 제거
   useEffect(() => {
@@ -90,9 +90,11 @@ const DetailHeart = ({ screen }: { screen: string }) => {
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollToEnd({ animated: false }); // 애니메이션 비활성화
       }
-    }, 100);
+    }, 500); // 500ms로 변경하여 콜백 누적 방지
 
-    return () => clearInterval(scrollInterval);
+    return () => {
+      clearInterval(scrollInterval);
+    };
   }, [isAutoScrolling]);
 
   // Y축 레이블 생성
@@ -123,7 +125,7 @@ const DetailHeart = ({ screen }: { screen: string }) => {
       if (range <= 0) return '';
 
       // 데이터 포인트 수를 줄임 (모든 포인트를 사용하지 않고 일부만 사용)
-      const step = Math.max(1, Math.floor(data.length / 50));
+      const step = Math.max(1, Math.floor(data.length / 100));
       const points = data
         .filter((_, index) => index % step === 0) // 데이터 포인트 샘플링
         .filter(point => typeof point.value === 'number' && !isNaN(point.value) && isFinite(point.value))
@@ -258,4 +260,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DetailHeart; 
+export default DetailHeart;

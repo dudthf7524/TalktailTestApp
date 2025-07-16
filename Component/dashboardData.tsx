@@ -2,9 +2,9 @@ import React from "react";
 import {SafeAreaView, StyleSheet, Text, View, Image} from "react-native";
 
 interface Data {
-  hrData : number;
-  spo2Data : number;
-  tempData : number;
+  hrData: number | null;
+  spo2Data: number | null;
+  tempData: number | null;
 }
 
 interface DashboardDataProps {
@@ -19,8 +19,8 @@ const DashboardData = ({screen, data}: DashboardDataProps ) => {
               <Image source={require("../assets/images/icon_hr.png")} style={styles.icon_img}/>
               {screen === 'LANDSCAPE' && <Text style={styles.icon_text}>심박수</Text>}
               <View style={styles.value_box}>
-                {/* <Text style={styles.value}>{data.hrData}</Text> */}
-                <Text style={styles.value}>120</Text>
+                <Text style={styles.value}>{data.hrData}</Text>
+                {/* <Text style={styles.value}>120</Text> */}
                 <Text style={styles.unit}>BPM</Text>
               </View>
             </SafeAreaView>
@@ -28,8 +28,8 @@ const DashboardData = ({screen, data}: DashboardDataProps ) => {
               <Image source={require("../assets/images/icon_spo2.png")} style={styles.icon_img}/>
               {screen === 'LANDSCAPE' && <Text style={styles.icon_text}>산소포화도</Text>}
               <View style={styles.value_box}>
-                {/* <Text style={styles.value}>{data.spo2Data}</Text> */}
-                <Text style={styles.value}>97</Text>
+                <Text style={styles.value}>{data.spo2Data}</Text>
+                {/* <Text style={styles.value}>97</Text> */}
                 <Text style={styles.unit}>%</Text>
               </View>
             </SafeAreaView>
@@ -37,8 +37,8 @@ const DashboardData = ({screen, data}: DashboardDataProps ) => {
               <Image source={require("../assets/images/icon_temp.png")} style={styles.icon_img}/>
               {screen === 'LANDSCAPE' && <Text style={styles.icon_text}>체온</Text>}
               <View style={styles.value_box}>
-                {/* <Text style={styles.value}>{data.tempData}</Text> */}
-                <Text style={styles.value}>36.5</Text>
+                <Text style={styles.value}>{data.tempData}</Text>
+                {/* <Text style={styles.value}>36.5</Text> */}
                 <Text style={styles.unit}>°C</Text>
               </View>
             </SafeAreaView>

@@ -1,22 +1,22 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  NativeModules,
-  NativeEventEmitter,
   Platform,
-  PermissionsAndroid,
   Dimensions,
   ScrollView,
+  AppState,
+  Image,
 } from 'react-native';
-import { RouteProp} from '@react-navigation/native';
-import Header from "./header"
+import {RouteProp} from '@react-navigation/native';
+import Header from './header';
 import NavigationBar from './navigationBar';
-
+import {Buffer} from 'buffer';
 import DashboardInfo from './dashboardInfo';
 import DashboardChart from './dashboardChart';
 import DashboardData from './dashboardData';
+import {useBLE} from './BLEContext';
 
 type RootStackParamList = {
   Dashboard: {
@@ -41,216 +41,74 @@ type DashboardScreenRouteProp = RouteProp<RootStackParamList, 'Dashboard'>;
 
 const windowWidth = Dimensions.get('window').width;
 
-import BleManager, {
-  BleDisconnectPeripheralEvent,
- 
-  Peripheral,
-} from 'react-native-ble-manager';
-const BleManagerModule = NativeModules.BleManager;
-const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
+// BLE 관련 코드는 connectBle.tsx에서만 처리
 
-async function requestLocationPermission() {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Location Permission',
-        message:
-          'App needs access to your location for Bluetooth functionality.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Location permission granted');
-    } else {
-      console.log('Location permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-}
-
-declare module 'react-native-ble-manager' {
-  interface Peripheral {
-    connected?: boolean;
-    connecting?: boolean;
-  }
-}
-
-const Dashboard = ({ route }: { route: DashboardScreenRouteProp }) => {
-  const { selectedPet } = route.params;
-  const [isScanning, setIsScanning] = useState(false);
-  const [peripherals, setPeripherals] = useState(
-    new Map<Peripheral['id'], Peripheral>(),
-  );
-  const [hrData, setHrData] = useState(0);
-  const [spo2Data, setSpo2Data] = useState(0);
-  const [tempData, setTempData] = useState(0);
+const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
+  const {dispatch, openRetryModal, setOpenRetryModal} = useBLE();
+  const {selectedPet} = route.params;
+  const {state} = useBLE(); // BLEContext 사용
   const [orientation, setOrientation] = useState('PORTRAIT');
+  const [appState, setAppState] = useState(AppState.currentState);
 
-  peripherals.get;
-
-  const addOrUpdatePeripheral = (id: string, updatedPeripheral: Peripheral) => {
-    setPeripherals(map => new Map(map.set(id, updatedPeripheral)));
-  };
-
-  const handleStopScan = () => {
-    setIsScanning(false);
-    console.debug('[handleStopScan] scan is stopped.');
-  };
-
-  const handleDisconnectedPeripheral = (
-    event: BleDisconnectPeripheralEvent,
-  ) => {
-    let peripheral = peripherals.get(event.peripheral);
-    if (peripheral) {
-      console.debug(
-        `[handleDisconnectedPeripheral][${peripheral.id}] previously connected peripheral is disconnected.`,
-        event.peripheral,
-      );
-      addOrUpdatePeripheral(peripheral.id, {...peripheral, connected: false});
-    }
-    console.debug(
-      `[handleDisconnectedPeripheral][${event.peripheral}] disconnected.`,
-    );
-  };
- 
-
-  const handleDiscoverPeripheral = (peripheral: Peripheral) => {
-    if (
-      peripheral.name === 'Zephy45' ||
-      peripheral.advertising.localName === 'Zephy45'
-    ) {
-      addOrUpdatePeripheral(peripheral.id, peripheral); 
-    }
-  };
-
+  // BLEContext의 상태를 사용
+  const hrData = state.currentHR;
+  const spo2Data = state.currentSpO2;
+  const tempData = state.currentTemp;
+  // BLE 이벤트 리스너는 connectBle.tsx에서만 등록하고, 
+  // 대시보드에서는 BLEContext를 통해 데이터를 받음
   useEffect(() => {
-    try {
-      BleManager.start({showAlert: false})
-        .then(() => {
-          console.debug('BleManager started.');
-          requestLocationPermission();
-        })
-        .catch(error =>
-          console.error('BeManager could not be started.', error),
-        );
-    } catch (error) {
-      console.error('unexpected error starting BleManager.', error);
-      return;
-    }
-
-    const listeners = [
-      bleManagerEmitter.addListener(
-        'BleManagerDiscoverPeripheral',
-        handleDiscoverPeripheral,
-      ),
-      bleManagerEmitter.addListener('BleManagerStopScan', handleStopScan),
-      bleManagerEmitter.addListener(
-        'BleManagerDisconnectPeripheral',
-        handleDisconnectedPeripheral,
-      ),
-      bleManagerEmitter.addListener(
-        'BleManagerDidUpdateValueForCharacteristic',
-        handleUpdateValueForCharacteristic,
-      ),
-      bleManagerEmitter.addListener(
-        'BleManagerConnectPeripheral',
-        peripheral => {
-          const isConnected = peripheral.connected;
-          console.log('연결 상태 변경:', isConnected);
-
-          const updatedPeripheral = {
-            ...peripheral,
-            connected: isConnected,
-          };
-          addOrUpdatePeripheral(updatedPeripheral.id, updatedPeripheral);
-        },
-      ),
-    ];
-
-    handleAndroidPermissions();
-
-    return () => {
-      console.debug('[app] main component unmounting. Removing listeners...');
-      for (const listener of listeners) {
-        listener.remove();
-      }
-    };
+    console.log('Dashboard mounted - BLE data will be received via BLEContext');
   }, []);
-
-  const handleAndroidPermissions = () => {
-    if (Platform.OS === 'android' && Platform.Version >= 31) {
-      PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      ]).then(result => {
-        if (result) {
-          console.debug(
-            '[handleAndroidPermissions] User accepts runtime permissions android 12+',
-          );
-        } else {
-          console.error(
-            '[handleAndroidPermissions] User refuses runtime permissions android 12+',
-          );
-        }
-      });
-    } else if (Platform.OS === 'android' && Platform.Version >= 23) {
-      PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ).then(checkResult => {
-        if (checkResult) {
-          console.debug(
-            '[handleAndroidPermissions] runtime permission Android <12 already OK',
-          );
-        } else {
-          PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          ).then(requestResult => {
-            if (requestResult) {
-              console.debug(
-                '[handleAndroidPermissions] User accepts runtime permission android <12',
-              );
-            } else {
-              console.error(
-                '[handleAndroidPermissions] User refuses runtime permission android <12',
-              );
-            }
-          });
-        }
-      });
-    }
-  };
+  
+  // BLE 데이터 처리는 connectBle.tsx에서 담당하므로 제거
 
   useEffect(() => {
     const { width, height } = Dimensions.get('window');
     setOrientation(width < height ? 'PORTRAIT' : 'LANDSCAPE');
 
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setOrientation(window.width < window.height ? 'PORTRAIT' : 'LANDSCAPE');
-    });
+    try {
+      const subscription = Dimensions.addEventListener('change', ({ window }) => {
+        setOrientation(window.width < window.height ? 'PORTRAIT' : 'LANDSCAPE');
+      });
 
-    return () => subscription.remove();
+      return () => {
+        subscription.remove();
+      };
+    } catch (error) {
+      console.error("Dimensions.addEventListener 에러:", error);
+    }
   }, []);
+
+  // 화면 회전 감지를 위한 별도의 useEffect
+  useEffect(() => {
+    const { width, height } = Dimensions.get('window');
+    setOrientation(width < height ? 'PORTRAIT' : 'LANDSCAPE');
+  }, [appState]);
 
   return (
     <>
-    {orientation === 'PORTRAIT' && <Header title="디바이스 모니터링" />}
+      {orientation === 'PORTRAIT' && <Header title="디바이스 모니터링" />}
 
-    <ScrollView style={styles.container}>
-      <DashboardInfo screen={orientation} pet={selectedPet}/>
-      <DashboardChart screen={orientation}/>
-      <DashboardData screen={orientation} data={{
-        hrData : hrData,
-        spo2Data : spo2Data,
-        tempData : tempData,  
-      }}/>
-      {orientation === "PORTRAIT" ? (<View style={styles.portrait_view}><Text style={styles.portrait_text}>가로로 화면을 봐보세요.</Text></View>) : ""}
-    </ScrollView>
-    {orientation === 'PORTRAIT' && <NavigationBar />}
- 
+      <ScrollView style={styles.container}>
+        <DashboardInfo screen={orientation} pet={selectedPet} />
+        <DashboardChart screen={orientation} />
+        <DashboardData
+          screen={orientation}
+          data={{
+            hrData: hrData,
+            spo2Data: spo2Data,
+            tempData: tempData?.value || null,
+          }}
+        />
+        {orientation === 'PORTRAIT' ? (
+          <View style={styles.portrait_box}>
+            <Image source={require("../assets/images/portrait_able.png")} style={styles.icon_img}/>
+          </View>
+        ) : (
+          ''
+        )}
+      </ScrollView>
+      {orientation === 'PORTRAIT' && <NavigationBar />}
     </>
   );
 };
@@ -294,7 +152,7 @@ const styles = StyleSheet.create({
   basic_text: {
     fontSize: 16,
     fontWeight: '400',
-    color: "#262626"
+    color: '#262626',
   },
   article_box: {
     width: '100%',
@@ -467,7 +325,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
@@ -477,17 +335,26 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   portrait_view: {
-    width: "100%",
-    height: "auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '100%',
+    height: 'auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 60,
   },
-  portrait_text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#262626",
-  }
+  portrait_box: {
+    width: 100,
+    height: 100,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: 25,
+    marginBottom: 100,
+  },
+  icon_img: {
+    width: '100%',
+    height: '100%',
+  },
 });
 export default Dashboard;

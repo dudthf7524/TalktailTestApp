@@ -20,4 +20,5 @@ export type RootStackParamList = {
     board_code: string;
   };
   CustomerService: undefined;
+  BatteryTest: undefined;
 }; 

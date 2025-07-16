@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -16,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { userStore } from '../store/userStore';
 import { getToken } from '../utils/storage';
 import AlertModal from './modal/alertModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PetData = {
   name: string;
@@ -182,7 +182,7 @@ const RegisterPet = ({ navigation }) => {
   return (
     <>
       <Header title="동물 정보 등록" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
@@ -201,6 +201,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="환자명을 입력하세요"
+                  placeholderTextColor="#999999"
                 />
                 {errors.name && (
                   <Text style={styles.errorText}>{errors.name}</Text>
@@ -251,6 +252,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="체중을 입력하세요"
+                  placeholderTextColor="#999999"
                 />
                 {errors.weight && (
                   <Text style={styles.errorText}>{errors.weight}</Text>
@@ -269,6 +271,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="종을 입력하세요(ex : 개, 고양이)"
+                  placeholderTextColor="#999999"
                 />
                 {errors.species && (
                   <Text style={styles.errorText}>{errors.species}</Text>
@@ -287,6 +290,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="품종을 입력하세요(ex : 말티즈, 푸들)"
+                  placeholderTextColor="#999999"
                 />
                 {errors.breed && (
                   <Text style={styles.errorText}>{errors.breed}</Text>
@@ -393,6 +397,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="주치의를 입력하세요"
+                  placeholderTextColor="#999999"
                 />
                 {errors.vet && (
                   <Text style={styles.errorText}>{errors.vet}</Text>
@@ -411,6 +416,7 @@ const RegisterPet = ({ navigation }) => {
                     }
                   }}
                   placeholder="진단명을 입력하세요"
+                  placeholderTextColor="#999999"
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
@@ -427,6 +433,7 @@ const RegisterPet = ({ navigation }) => {
                   value={formData.history}
                   onChangeText={(text) => setFormData(prev => ({ ...prev, history: text }))}
                   placeholder="과거병력을 입력하세요"
+                  placeholderTextColor="#999999"
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"

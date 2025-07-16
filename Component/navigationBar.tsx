@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Pressable, Text, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -15,9 +16,10 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const NavigationBar: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { marginBottom: insets.bottom }]}>
       <Pressable 
         style={styles.button}
         onPress={() => navigation.navigate('PetLists')}
