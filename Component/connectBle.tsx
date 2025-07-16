@@ -522,21 +522,21 @@ const ConnectBle = ({ route }: Props) => {
   };
 
   const handleMonitoring = () => {
-    if(!isConnected) {
-      setModalContent({
-        title: '알림',
-        content: '디바이스를 연결해주세요.'
-      });
-      setOpenAlertModal(true);
-    } else {
-      navigation.push('Dashboard', {
-        selectedPet,
-      });
-    }
+    // if(!isConnected) {
+    //   setModalContent({
+    //     title: '알림',
+    //     content: '디바이스를 연결해주세요.'
+    //   });
+    //   setOpenAlertModal(true);
+    // } else {
+    //   navigation.push('Dashboard', {
+    //     selectedPet,
+    //   });
+    // }
     // navigation.navigate('Dashboard');
-    // navigation.push('Dashboard', {
-    //   selectedPet,
-    // });
+    navigation.push('Dashboard', {
+      selectedPet,
+    });
   };
 
   return (
