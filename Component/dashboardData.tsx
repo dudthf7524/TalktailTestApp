@@ -49,7 +49,7 @@ const DashboardData = ({screen, data}: DashboardDataProps ) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '98%',
+    width: '95%',
     height: 'auto',
     borderWidth: 1,
     borderRadius: 16,
@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
     alignSelf: "center",
+    
     marginTop: 10,
   },
   metrics_container: {
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
   icon_img: {
     width: 20,
     height: 20,
-    marginRight: 4,
+    marginLeft: 4,
   },
   icon_text: {
     fontSize: 16,
@@ -101,6 +102,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#7b7b7b',
     marginLeft: 4,
+    marginRight:4
   },
 })
 

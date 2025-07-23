@@ -218,7 +218,7 @@ const PetLists = ({ navigation }) => {
           }}
         >
           <Text style={styles.addButtonText}>
-            모니터링 보기
+            선택하기
           </Text>
         </TouchableOpacity>
       </SafeAreaView>

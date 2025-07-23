@@ -266,10 +266,12 @@ const SignUp = ({ route }) => {
       <HeaderSignup title="회원가입" />
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.container}
         >
-          <ScrollView style={styles.scrollView}>
+          <ScrollView
+            style={styles.scrollView}
+          >
             <View style={styles.form}>
               <View style={styles.inputGroup}>
                 <Text style={styles.deviceLabel}>디바이스 코드</Text>
@@ -374,7 +376,7 @@ const SignUp = ({ route }) => {
                     setFormData(prev => ({ ...prev, org_pw: text }));
                     setErrors(prev => ({ ...prev, org_pw: undefined }));
                   }}
-                  placeholder="비밀번호를 입력하세요"
+                  placeholder="비밀번호를 입력하세요(8자리 이상)"
                   placeholderTextColor="#999999"
                   secureTextEntry
                   editable={checkSuccess}

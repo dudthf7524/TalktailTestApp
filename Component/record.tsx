@@ -111,14 +111,14 @@ const Record = () => {
             </View>
 
             <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.label}>펫</Text>
+              <Text style={styles.label}>동물</Text>
               <SelectDropdown
                 data={nameLists}
                 onSelect={(selectedItem) => {
                   setSelectedPet(selectedItem.value);
                   setSelectedLabel(selectedItem.label);
                 }}
-                defaultButtonText="펫을 선택하세요"
+                defaultButtonText="동물을 선택하세요"
                 buttonTextAfterSelection={(selectedItem) => selectedItem.label}
                 rowTextForSelection={(item) => item.label}
                 buttonStyle={styles.dropdownButton}

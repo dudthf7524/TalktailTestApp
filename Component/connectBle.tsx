@@ -7,6 +7,8 @@ import {
   ScrollView,
   Platform,
   PermissionsAndroid,
+  Alert,
+  Linking,
 } from 'react-native';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import Header from './header';
@@ -85,7 +87,7 @@ const ConnectBle = ({ route }: Props) => {
 
   const { selectedPet } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const {dispatch, openRetryModal, setOpenRetryModal} = useBLE();
+  const { dispatch, openRetryModal, setOpenRetryModal } = useBLE();
   const [isScanning, setIsScanning] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -161,7 +163,10 @@ const ConnectBle = ({ route }: Props) => {
     try {
       // 안드로이드 권한 체크
       if (Platform.OS === 'android') {
-        await handleAndroidPermissions();
+        const permissionGranted = await handleAndroidPermissions();
+        if (!permissionGranted) {
+          return;
+        }
       }
 
       const state = await BleManager.checkState();
@@ -215,42 +220,91 @@ const ConnectBle = ({ route }: Props) => {
     }
   };
 
-  const handleAndroidPermissions = async () => {
-    if (Platform.OS === 'android' && Platform.Version >= 31) {
-      const result = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      ]);
+  // const handleAndroidPermissions = async () => {
+  //   if (Platform.OS === 'android' && Platform.Version >= 31) {
+  //     const result = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+  //       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+  //     ]);
 
-      if (result) {
-        console.log('Android 12+ permissions granted');
-      } else {
-        console.error('Android 12+ permissions denied');
-        // 권한 필요 모달 표시
-        setModalContent({
-          title: '권한 필요',
-          content: '블루투스 스캔을 위해 권한이 필요합니다.',
-        });
-        setOpenMessageModal(true);
-      }
-    } else if (Platform.OS === 'android' && Platform.Version >= 23) {
-      const result = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      );
+  //     if (result) {
+  //       console.log('Android 12+ permissions granted');
+  //     } else {
+  //       console.error('Android 12+ permissions denied');
+  //       // 권한 필요 모달 표시
+  //       setModalContent({
+  //         title: '권한 필요',
+  //         content: '블루투스 스캔을 위해 권한이 필요합니다.',
+  //       });
+  //       setOpenMessageModal(true);
+  //     }
+  //   } else if (Platform.OS === 'android' && Platform.Version >= 23) {
+  //     const result = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //     );
 
-      if (result) {
-        console.log('Android <12 permissions granted');
-      } else {
-        console.error('Android <12 permissions denied');
-        // 권한 필요 모달 표시
-        setModalContent({
-          title: '권한 필요',
-          content: '블루투스 스캔을 위해 위치 권한이 필요합니다.',
-        });
-        setOpenMessageModal(true);
+  //     if (result) {
+  //       console.log('Android <12 permissions granted');
+  //     } else {
+  //       console.error('Android <12 permissions denied');
+  //       // 권한 필요 모달 표시
+  //       setModalContent({
+  //         title: '권한 필요',
+  //         content: '블루투스 스캔을 위해 위치 권한이 필요합니다.',
+  //       });
+  //       setOpenMessageModal(true);
+  //     }
+  //   }
+  // };
+
+  const handleAndroidPermissions = async (): Promise<boolean> => {
+    console.log('==== Android 권한 체크 시작 ====');
+
+    if (Platform.OS === 'android') {
+      try {
+        const grantedPermissions = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        ]);
+        console.log("scanGranted :", grantedPermissions);
+        if (grantedPermissions['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ||
+          grantedPermissions['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ||
+          grantedPermissions['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+        ) {
+          Alert.alert(
+            '권한 필요',
+            '블루투스 스캔 권한이 "다시 묻지 않음"으로 설정되어 있어, 설정에서 직접 허용해야 합니다.',
+            [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '설정으로 이동',
+                onPress: () => Linking.openSettings(),
+              },
+            ]
+          );
+          return false;
+        }
+        if (
+          grantedPermissions['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED &&
+          grantedPermissions['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
+          grantedPermissions['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('모든 권한이 허용되었습니다.');
+          return true;
+        } else {
+          console.log('하나 이상의 권한이 거부됨');
+          return false;
+        }
+      } catch (err) {
+        console.warn('권한 요청 중 오류:', err);
+        return false;
       }
     }
+
+    return true;
   };
+
 
   const handleDeviceSelect = async (deviceId: string) => {
     try {
@@ -284,7 +338,7 @@ const ConnectBle = ({ route }: Props) => {
       }
 
       // 이전 데이터 초기화
-      dispatch({type: 'CLEAR_COLLECTED_DATA'});
+      dispatch({ type: 'CLEAR_COLLECTED_DATA' });
       setIsSubscribed(false);
 
       // 새 연결 시도
@@ -306,7 +360,7 @@ const ConnectBle = ({ route }: Props) => {
         const newPeripherals = new Map(prevPeripherals);
         const peripheral = newPeripherals.get(deviceId);
         if (peripheral) {
-          newPeripherals.set(deviceId, {...peripheral, connected: true});
+          newPeripherals.set(deviceId, { ...peripheral, connected: true });
         }
         return newPeripherals;
       });
@@ -338,7 +392,7 @@ const ConnectBle = ({ route }: Props) => {
       setOpenMessageModal(true);
     } catch (error) {
       console.error('Connection error:', error);
-      dispatch({type: 'CONNECT_DEVICE', payload: null});
+      dispatch({ type: 'CONNECT_DEVICE', payload: null });
       setIsSubscribed(false);
       setModalContent({
         title: '연결 실패',
@@ -351,20 +405,20 @@ const ConnectBle = ({ route }: Props) => {
 
   const lastUpdateTime = useRef<number>(Date.now());
 
-  const dataBufferRef = useRef<{data: number[], timestamp: number}[]>([]);
+  const dataBufferRef = useRef<{ data: number[], timestamp: number }[]>([]);
   const handleUpdateValueForCharacteristic = useCallback((data: any) => {
 
     const value = data.value;
     const decodedValue = Buffer.from(value, 'base64').toString('utf-8');
     // console.log('🔔 handleUpdateValueForCharacteristic 호출됨:', new Date().toISOString());
-    
+
     const parsedData = decodedValue.split(',').map(Number);
     console.log("ir : ", parsedData[1]);
     console.log("red : ", parsedData[2]);
     if (parsedData[1] < 110000) {
       // 버퍼 비우기
       dataBufferRef.current = [];
-      
+
       // 팝업이 이미 표시되지 않은 경우에만 팝업 표시
       if (!openRetryModal) {
         setOpenRetryModal(true);
@@ -379,8 +433,8 @@ const ConnectBle = ({ route }: Props) => {
     if (dataBufferRef.current.length >= 10) {
       const collectedData = dataBufferRef.current.slice();
       dataBufferRef.current = [];
-      
-      const allDataPoints = collectedData.map(({data, timestamp}) => ({
+
+      const allDataPoints = collectedData.map(({ data, timestamp }) => ({
         timestamp,
         cnt: data[0],
         ir: data[1],
@@ -391,7 +445,7 @@ const ConnectBle = ({ route }: Props) => {
         temp: data[6] ?? 0,
         battery: data[7] ?? 0,
       }));
-      
+
       // 3단계: dispatch
       dispatch({
         type: 'COLLECT_DATAS',
@@ -435,8 +489,8 @@ const ConnectBle = ({ route }: Props) => {
       }
     }
 
-    dispatch({type: 'CONNECT_DEVICE', payload: null});
-    dispatch({type: 'CLEAR_COLLECTED_DATA'});
+    dispatch({ type: 'CONNECT_DEVICE', payload: null });
+    dispatch({ type: 'CLEAR_COLLECTED_DATA' });
     setIsSubscribed(false);
     setSelectedDevice(null);
 
@@ -445,7 +499,7 @@ const ConnectBle = ({ route }: Props) => {
       const newMap = new Map(map);
       const peripheral = newMap.get(data.peripheral);
       if (peripheral) {
-        newMap.set(data.peripheral, {...peripheral, connected: false});
+        newMap.set(data.peripheral, { ...peripheral, connected: false });
       }
       return newMap;
     });
@@ -504,13 +558,13 @@ const ConnectBle = ({ route }: Props) => {
         console.log('Disconnected from device:', selectedDevice);
 
         // 연결 해제 시 상태 업데이트
-        dispatch({type: 'CONNECT_DEVICE', payload: null});
-        dispatch({type: 'CLEAR_COLLECTED_DATA'});
+        dispatch({ type: 'CONNECT_DEVICE', payload: null });
+        dispatch({ type: 'CLEAR_COLLECTED_DATA' });
         setPeripherals(map => {
           const newMap = new Map(map);
           const peripheral = newMap.get(selectedDevice);
           if (peripheral) {
-            newMap.set(selectedDevice, {...peripheral, connected: false});
+            newMap.set(selectedDevice, { ...peripheral, connected: false });
           }
           return newMap;
         });
@@ -550,7 +604,7 @@ const ConnectBle = ({ route }: Props) => {
             {Array.from(peripherals.values()).map(peripheral => (
               <Pressable
                 key={peripheral.id}
-                style={({pressed}) => [
+                style={({ pressed }) => [
                   styles.deviceItem,
                   selectedDevice === peripheral.id && styles.selectedDevice,
                   peripheral.connected && styles.connectedDevice,
@@ -567,7 +621,7 @@ const ConnectBle = ({ route }: Props) => {
           </ScrollView>
         </View>
         <Pressable
-          style={({pressed}) => [
+          style={({ pressed }) => [
             styles.scanButton,
             isConnected && styles.disconnectButton,
             pressed && styles.pressedButton,
@@ -577,12 +631,12 @@ const ConnectBle = ({ route }: Props) => {
             {isConnected
               ? '디바이스 연결 끊기'
               : isScanning
-              ? '찾는 중...'
-              : '디바이스 찾기'}
+                ? '찾는 중...'
+                : '디바이스 찾기'}
           </Text>
         </Pressable>
         <Pressable
-          style={({pressed}) => [
+          style={({ pressed }) => [
             styles.monitoringButton,
             pressed && styles.pressedButton,
           ]}
@@ -687,11 +741,11 @@ const styles = StyleSheet.create({
   },
   pressedDevice: {
     opacity: 0.7,
-    transform: [{scale: 0.98}],
+    transform: [{ scale: 0.98 }],
   },
   pressedButton: {
     opacity: 0.8,
-    transform: [{scale: 0.98}],
+    transform: [{ scale: 0.98 }],
   },
 });
 

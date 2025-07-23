@@ -170,7 +170,7 @@ const AppContent = () => {
   }, []);
   useEffect(() => {
     if (openRetryModal && platform === "ios") {
-      Alert.alert('디바이스 위치 조정', '디바이스를 다른 부위에 대주세요', [
+      Alert.alert('디바이스 위치 조정', '다시 시도해 주세요', [
         {
           text: "확인",
           onPress: () => {
@@ -213,7 +213,7 @@ const AppContent = () => {
       {platform === "android" ? (   <AlertModal
         visible={openRetryModal}
         title="디바이스 위치 조정"
-        content="디바이스를 다른 부위에 대주세요"
+        content="다시 시도해 주세요"
         onClose={handleRetryConfirm}
       />) : ""}
    

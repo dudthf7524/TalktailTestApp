@@ -163,7 +163,7 @@ const EditPet = () => {
       console.error('Error updating pet:', error);
       setModalContent({
         title: "수정 실패",
-        content: "펫 정보 수정에 실패했습니다. 다시 시도해주세요."
+        content: "동물 정보 수정에 실패했습니다. 다시 시도해주세요."
       });
       setOpenAlertModal(true);
     }

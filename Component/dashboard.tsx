@@ -100,7 +100,7 @@ const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
             tempData: tempData?.value || null,
           }}
         />
-        {orientation === 'PORTRAIT' ? (
+        {orientation === 'PORTRAIT' && Platform.OS === "android" ? (
           <View style={styles.portrait_box}>
             <Image source={require("../assets/images/portrait_able.png")} style={styles.icon_img}/>
           </View>

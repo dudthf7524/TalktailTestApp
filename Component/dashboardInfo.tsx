@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     marginBottom: 10,
+    marginTop:10
   },
   landscape_container : {
     width: '100%',

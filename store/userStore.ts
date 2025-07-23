@@ -1,7 +1,7 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import axios from 'axios';
-import { API_URL } from '../Component/constant/contants';
-import { getToken } from '../utils/storage';
+import {API_URL} from '../Component/constant/contants';
+import {getToken} from '../utils/storage';
 
 export interface Pet {
   device_code: string;
@@ -9,9 +9,14 @@ export interface Pet {
   name: string;
   birth: string;
   breed: string;
-  gender: boolean;  
+  gender: boolean;
   neutered: boolean;
   disease: string;
+  history: string;
+  admission: string;
+  species: string;
+  weight: string;
+  vet: string;
 }
 
 interface PetFormData {
@@ -21,6 +26,11 @@ interface PetFormData {
   gender: boolean;
   neutered: boolean;
   disease: string;
+  history: string;
+  admission: string;
+  species: string;
+  weight: string;
+  vet: string;
   device_code: string;
 }
 
@@ -69,22 +79,25 @@ export const userStore = create<UserStore>((set, get) => ({
 
   fetchPets: async () => {
     try {
-      set({ loadLoading: true, loadError: null, loadSuccess: false });
+      set({loadLoading: true, loadError: null, loadSuccess: false});
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
       }
 
       const response = await axios.post(`${API_URL}/pet/load`, {
-        device_code: token.device_code
+        device_code: token.device_code,
       });
 
-      set({ pets: response.data, loadLoading: false, loadSuccess: true });
+      set({pets: response.data, loadLoading: false, loadSuccess: true});
     } catch (error) {
-      set({ 
-        loadError: error instanceof Error ? error.message : '펫 데이터를 가져오는데 실패했습니다.', 
+      set({
+        loadError:
+          error instanceof Error
+            ? error.message
+            : '동물 데이터를 가져오는데 실패했습니다.',
         loadLoading: false,
-        loadSuccess: false
+        loadSuccess: false,
       });
       throw error;
     }
@@ -92,45 +105,53 @@ export const userStore = create<UserStore>((set, get) => ({
 
   registerPet: async (formData: PetFormData) => {
     try {
-      set({ registerLoading: true, registerError: null, registerSuccess: false });
+      set({registerLoading: true, registerError: null, registerSuccess: false});
       const response = await axios.post(`${API_URL}/pet/register`, formData);
-      
+
       if (response.status === 200) {
         const token = await getToken();
         if (!token) {
           throw new Error('토큰이 없습니다.');
         }
         const petsResponse = await axios.post(`${API_URL}/pet/load`, {
-          device_code: token.device_code
+          device_code: token.device_code,
         });
-        set({ pets: petsResponse.data, registerLoading: false, registerSuccess: true });
+        set({
+          pets: petsResponse.data,
+          registerLoading: false,
+          registerSuccess: true,
+        });
       }
     } catch (error) {
-      set({ 
-        registerError: error instanceof Error ? error.message : '펫 등록에 실패했습니다.', 
+      set({
+        registerError:
+          error instanceof Error ? error.message : '동물 등록에 실패했습니다.',
         registerLoading: false,
-        registerSuccess: false
+        registerSuccess: false,
       });
-      throw error; 
+      throw error;
     }
   },
 
   updatePet: async (petData: any) => {
     try {
-      set({ updateLoading: true, updateError: null, updateSuccess: false });
+      set({updateLoading: true, updateError: null, updateSuccess: false});
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
       }
-      const response = await axios.post(`${API_URL}/pet/update`, { token, ...petData });
+      const response = await axios.post(`${API_URL}/pet/update`, {
+        token,
+        ...petData,
+      });
       if (response.status === 200) {
         const petsResponse = await axios.post(`${API_URL}/pet/load`, {
-          device_code: token.device_code
+          device_code: token.device_code,
         });
-        set({ 
-          pets: petsResponse.data, 
-          updateLoading: false, 
-          updateSuccess: true 
+        set({
+          pets: petsResponse.data,
+          updateLoading: false,
+          updateSuccess: true,
         });
       }
     } catch (error: any) {
@@ -138,7 +159,8 @@ export const userStore = create<UserStore>((set, get) => ({
       set({
         updateLoading: false,
         updateSuccess: false,
-        updateError: error.response?.data?.message || '동물 정보 수정에 실패했습니다.'
+        updateError:
+          error.response?.data?.message || '동물 정보 수정에 실패했습니다.',
       });
       throw error;
     }
@@ -146,7 +168,7 @@ export const userStore = create<UserStore>((set, get) => ({
 
   deletePet: async (petCode: string) => {
     try {
-      set({ deleteLoading: true, deleteError: null, deleteSuccess: false });
+      set({deleteLoading: true, deleteError: null, deleteSuccess: false});
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
@@ -154,43 +176,61 @@ export const userStore = create<UserStore>((set, get) => ({
 
       const response = await axios.post(`${API_URL}/pet/delete`, {
         device_code: token.device_code,
-        pet_code: petCode
+        pet_code: petCode,
       });
 
       if (response.status === 200) {
         const petsResponse = await axios.post(`${API_URL}/pet/load`, {
-          device_code: token.device_code
+          device_code: token.device_code,
         });
-        set({ pets: petsResponse.data, deleteLoading: false, deleteSuccess: true });
+        set({
+          pets: petsResponse.data,
+          deleteLoading: false,
+          deleteSuccess: true,
+        });
       }
     } catch (error) {
-      set({ 
-        deleteError: error instanceof Error ? error.message : '펫 삭제에 실패했습니다.', 
+      set({
+        deleteError:
+          error instanceof Error ? error.message : '동물 삭제에 실패했습니다.',
         deleteLoading: false,
-        deleteSuccess: false
+        deleteSuccess: false,
       });
       throw error;
     }
   },
 
+  confirmPassword: async (password: string) => {
+    const token = await getToken();
+    if (!token) {
+      throw new Error('토큰이 없습니다.');
+    }
+    const response = await axios.post(`${API_URL}/user/confirmPassword`, {
+      token,
+      password,
+    });
+    console.log(response.status);
+  },
+
   offLoadSuccess: () => {
-    set({ loadSuccess: false });
+    set({loadSuccess: false});
   },
   offLoadError: () => {
-    set({ loadError: null });
+    set({loadError: null});
   },
   offRegisterSuccess: () => {
-    set({ registerSuccess: false });
+    set({registerSuccess: false});
   },
   offRegisterError: () => {
-    set({ registerError: null });
+    set({registerError: null});
   },
-  offUpdateSuccess: () => set({ updateSuccess: false }),
-  offUpdateError: () => set({ updateError: null }),
+  offUpdateSuccess: () => set({updateSuccess: false}),
+  offUpdateError: () => set({updateError: null}),
   offDeleteSuccess: () => {
-    set({ deleteSuccess: false });
+    set({deleteSuccess: false});
   },
   offDeleteError: () => {
-    set({ deleteError: null });
-  }
+    set({deleteError: null});
+  },
 }));
+ 
