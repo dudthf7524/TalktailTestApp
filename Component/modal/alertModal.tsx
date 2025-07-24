@@ -22,9 +22,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
   content,
   onClose,
 }) => {
-  console.log('🔔 AlertModal 렌더링 - visible:', visible, 'title:', title);
-  
-  return (
+    return (
     <Modal
       visible={visible}
       transparent

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Platformp,
+  Platform,
 } from 'react-native';
 import { dataStore } from '../store/dataStore';
 import AlertModal from './modal/alertModal';
@@ -47,6 +47,7 @@ const RecordLists = ({selectedDate, selectedPetCode, label}: {selectedDate: stri
   const date_time = csvLists.map((list)=> list.file_name.split("_")[2].split(".")[0].split("-"));
   const dates = date_time.map((list)=> list[0]);
   const times = date_time.map((list)=> list[1]);
+
   const formattedTimes = times.map(time => 
     dayjs(time, "HHmmss").format("HH:mm:ss")
   );
@@ -93,10 +94,18 @@ const RecordLists = ({selectedDate, selectedPetCode, label}: {selectedDate: stri
 
   useEffect(() => {
     if (downCsvSuccess) {
-      setAlertTitle("다운로드 완료");
-      setAlertContent("Downloads 폴더에서 확인하세요.");
-      setOpenAlertModal(true);
-      offDownCsvSuccess();
+      if(Platform.OS === "android"){
+        setAlertTitle("다운로드 완료");
+        setAlertContent("Downloads 폴더에서 확인하세요.");
+        setOpenAlertModal(true);
+        offDownCsvSuccess();
+      }else{
+        setAlertTitle("다운로드 완료");
+        setAlertContent("지정하신 폴더에서 확인하세요.");
+        setOpenAlertModal(true);
+        offDownCsvSuccess();
+      }
+     
     }
   }, [downCsvSuccess]);
 

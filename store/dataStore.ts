@@ -1,9 +1,12 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import axios from 'axios';
-import {API_URL} from '../Component/constant/contants';
-import {getToken} from '../utils/storage';
+import { API_URL } from '../Component/constant/contants';
+import { getToken } from '../utils/storage';
 import RNFS from 'react-native-fs';
 import dayjs from 'dayjs';
+import Share from 'react-native-share';
+import { Alert, Platform } from 'react-native';
+
 
 interface DataPoint {
   timestamp: number;
@@ -81,7 +84,7 @@ export const dataStore = create<DataStore>((set, get) => ({
     device_code: string,
   ) => {
     try {
-      set({createLoading: true, createError: null});
+      set({ createLoading: true, createError: null });
       const response = await axios.post(`${API_URL}/data/create`, {
         date,
         time,
@@ -89,9 +92,9 @@ export const dataStore = create<DataStore>((set, get) => ({
         device_code,
       });
       if (response.status === 200) {
-        set({createLoading: false, createError: null});
+        set({ createLoading: false, createError: null });
       } else {
-        set({createError: 'CSV 생성에 실패했습니다.', createLoading: false});
+        set({ createError: 'CSV 생성에 실패했습니다.', createLoading: false });
       }
     } catch (error) {
       set({
@@ -135,7 +138,7 @@ export const dataStore = create<DataStore>((set, get) => ({
   },
   loadData: async (date: string, pet_code: string) => {
     try {
-      set({loadLoading: true, loadError: null});
+      set({ loadLoading: true, loadError: null });
       const token = await getToken();
       const device_code = token?.device_code;
 
@@ -151,7 +154,7 @@ export const dataStore = create<DataStore>((set, get) => ({
           loadError: null,
         });
       } else {
-        set({loadError: '데이터 로드에 실패했습니다.', loadLoading: false});
+        set({ loadError: '데이터 로드에 실패했습니다.', loadLoading: false });
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
@@ -172,35 +175,61 @@ export const dataStore = create<DataStore>((set, get) => ({
     }
   },
   downCSV: async (file_name: string, label: string) => {
+    console.log('label:', label);
+    console.log('file_name:', file_name);
+
     try {
-      set({downCsvLoading: true, downCsvError: null, downCsvSuccess: false});
-      const date_time = file_name.split('_')[2].replace(/\.csv$/i, '');
+      set({ downCsvLoading: true, downCsvError: null, downCsvSuccess: false });
+
+      const date_time = file_name.split('_')[2]?.replace(/\.csv$/i, '') || 'unknown';
       const extIndex = file_name.lastIndexOf('.');
       const ext = extIndex !== -1 ? file_name.substring(extIndex) : '.csv';
-      let baseFileName = `${label}_${date_time}`;
-      let downloadPath = `${RNFS.DownloadDirectoryPath}/${baseFileName}${ext}`;
 
-      let count = 1;
-      while (await RNFS.exists(downloadPath)) {
-        downloadPath = `${RNFS.DownloadDirectoryPath}/${baseFileName}(${count})${ext}`;
-        count++;
-      }
+      const safeLabel = label.replace(/[^\w\s.-]/g, '_');
+      const baseFileName = `${safeLabel}_${date_time}${ext}`;
 
+      // 1. 서버에서 CSV 데이터 가져오기
       const response = await axios({
         url: `${API_URL}/data/downloadCSV`,
         method: 'POST',
-        data: {filename: file_name},
+        data: { filename: file_name },
         responseType: 'text',
       });
 
-      await RNFS.writeFile(downloadPath, response.data, 'utf8');
-      set({downCsvSuccess: true, downCsvLoading: false, downCsvError: null});
-    } catch (error) {
+      let finalPath = '';
+
+      if (Platform.OS === 'android') {
+        // ✅ Android: 다운로드 폴더에 저장
+        const baseDir = RNFS.DownloadDirectoryPath;
+        finalPath = `${baseDir}/${baseFileName}`;
+        let count = 1;
+
+        while (await RNFS.exists(finalPath)) {
+          finalPath = `${baseDir}/${safeLabel}_${date_time}(${count})${ext}`;
+          count++;
+        }
+
+        await RNFS.writeFile(finalPath, response.data, 'utf8');
+      } else {
+        // ✅ iOS: Document Picker를 통해 저장 위치 선택
+        const tempPath = `${RNFS.DocumentDirectoryPath}/${baseFileName}`;
+        await RNFS.writeFile(tempPath, response.data, 'utf8');
+
+        await Share.open({
+          url: 'file://' + tempPath,
+          type: 'text/csv',
+          filename: baseFileName,
+          failOnCancel: false,
+        });
+
+        // Alert.alert('파일 공유됨', '파일 앱 또는 다른 앱에 저장할 수 있습니다.');
+      }
+
+      set({ downCsvSuccess: true, downCsvLoading: false, downCsvError: null });
+    } catch (error: any) {
+      console.error('❌ CSV 다운로드 실패:', error);
       set({
-        downCsvError:
-          error instanceof Error
-            ? error.message
-            : 'CSV 다운로드에 실패했습니다.',
+        downCsvError: error?.message || 'CSV 다운로드에 실패했습니다.',
         downCsvLoading: false,
         downCsvSuccess: false,
       });
@@ -237,9 +266,9 @@ export const dataStore = create<DataStore>((set, get) => ({
       });
     }
   },
-  resetDownCsvSuccess: () => set({downCsvSuccess: false}),
-  offDownCsvSuccess: () => set({downCsvSuccess: false}),
-  offDownCsvError: () => set({downCsvError: null}),
-  offDeleteCsvSuccess: () => set({deleteCsvSuccess: false}),
-  offDeleteCsvError: () => set({deleteCsvError: null}),
+  resetDownCsvSuccess: () => set({ downCsvSuccess: false }),
+  offDownCsvSuccess: () => set({ downCsvSuccess: false }),
+  offDownCsvError: () => set({ downCsvError: null }),
+  offDeleteCsvSuccess: () => set({ deleteCsvSuccess: false }),
+  offDeleteCsvError: () => set({ deleteCsvError: null }),
 }));
