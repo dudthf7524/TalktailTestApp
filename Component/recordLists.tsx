@@ -18,6 +18,10 @@ import RNFS from 'react-native-fs';
 dayjs.extend(customParseFormat);
 
 const RecordLists = ({selectedDate, selectedPetCode, label}: {selectedDate: string, selectedPetCode: string, label: string}) => {
+  console.log("selectedDate", selectedDate)
+  console.log("selectedPetCode", selectedPetCode)
+  console.log("label", label)
+
   const [openAlertModal, setOpenAlertModal] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertContent, setAlertContent] = useState('');

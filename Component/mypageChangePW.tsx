@@ -173,6 +173,7 @@ const MypageChangePW = () => {
                     setFormData(prev => ({ ...prev, currentPassword: text }));
                   }}
                   placeholder="기존 비밀번호를 입력하세요"
+                  placeholderTextColor="#A9A9A9"
                   secureTextEntry
                 />
                 {errors.currentPassword && (
@@ -189,6 +190,7 @@ const MypageChangePW = () => {
                     setFormData(prev => ({ ...prev, newPassword: text }));
                   }}
                   placeholder="새 비밀번호를 입력하세요"
+                  placeholderTextColor="#A9A9A9"
                   secureTextEntry
                 />
                 {errors.newPassword && (
@@ -205,6 +207,7 @@ const MypageChangePW = () => {
                     setFormData(prev => ({ ...prev, confirmPassword: text }));
                   }}
                   placeholder="새 비밀번호를 다시 입력하세요"
+                  placeholderTextColor="#A9A9A9"
                   secureTextEntry
                 />
                 {errors.confirmPassword && (

@@ -1,13 +1,15 @@
+// App.tsx
 import React, { useEffect, useState } from 'react';
+import { Platform, StatusBar, Alert, Linking } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { BLEProvider } from './Component/BLEContext';
-// import messaging from '@react-native-firebase/messaging';
-// import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
-import { Alert, Platform, StatusBar } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import {useBLE} from './Component/BLEContext';
+import Orientation from 'react-native-orientation-locker';
+
+import { BLEProvider, useBLE } from './Component/BLEContext';
 import AlertModal from './Component/modal/alertModal';
+import UpdatePage from './UpdateModal';
+import { checkAppVersion } from './checkAppVersion';
 
 import Login from './Component/logIn';
 import SignUp from './Component/sign';
@@ -28,131 +30,39 @@ import MypageOut from './Component/mypageOut';
 import Board from './Component/board';
 import BoardDetail from './Component/boardDetail';
 import CustomerService from './Component/customerService';
-// import BatteryTest from './Component/BatteryTest';
 import { RootStackParamList } from './types/navigation';
-// import './backgroundEventHandler';
-import Orientation from 'react-native-orientation-locker';
+
 export const navigationRef = createNavigationContainerRef();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// async function requestNotificationPermission() {
-//   if (Platform.OS === 'android' && Platform.Version >= 33) {
-//     const granted = await PermissionsAndroid.request(
-//       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-//     );
-//     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-//       console.log('🔕 알림 권한 거부됨');
-//       return false;
-//     } else {
-//       console.log('🔔 알림 권한 허용됨');
-//       return true;
-//     }
-//   }
-//   if (Platform.OS === 'ios') {
-//     const authStatus = await messaging().requestPermission();
-//     console.log('iOS 권한 상태:', authStatus);
-//   }
-//   return true;
-// }
-
-// async function setupNotifications() {
-//   await notifee.createChannel({
-//     id: 'riders',
-//     name: '앱 전반',
-//     sound: 'default',
-//     importance: AndroidImportance.HIGH,
-//   });
-
-  // await messaging().requestPermission();
-  // if (Platform.OS === 'ios') {
-  //   await notifee.requestPermission();
-  // }
-
-//   const shownMessages = new Set();
-
-//   messaging().setBackgroundMessageHandler(async remoteMessage => {
-//     if (shownMessages.has(remoteMessage.messageId)) return;
-//     shownMessages.add(remoteMessage.messageId);
-//     await notifee.displayNotification({
-//       title: remoteMessage.notification?.title,
-//       body: remoteMessage.notification?.body,
-//       android: {
-//         channelId: 'riders',
-//         pressAction: {
-//           id: 'default', // 반드시 id 지정 (대부분 'default' 사용)
-//         },
-//       },
-//       data: { screen: remoteMessage.data?.screen ?? '' },
-//     });
-//   });
-
-//   messaging().onMessage(async remoteMessage => {
-//     if (shownMessages.has(remoteMessage.messageId)) return;
-//     shownMessages.add(remoteMessage.messageId);
-//     await notifee.displayNotification({
-//       title: remoteMessage.notification?.title,
-//       body: remoteMessage.notification?.body,
-//       android: {
-//         channelId: 'riders',
-//         pressAction: {
-//           id: 'default', // 반드시 id 지정 (대부분 'default' 사용)
-//         },
-//       },
-//       data: { screen: remoteMessage.data?.screen ?? '' },
-//     });
-//   });
-// }
-
-// function setupNotificationNavigationHandlers() {
-//   notifee.onForegroundEvent(({ type, detail }) => {
-//     if (type === EventType.PRESS) {
-//       const screen = detail.notification?.data?.screen;
-//       if (screen && navigationRef.isReady()) {
-//         navigationRef.navigate(screen);
-//       }
-//     }
-//   });
-
-//   messaging().onNotificationOpenedApp(remoteMessage => {
-//     console.log('aaaa')
-//     const screen = remoteMessage?.data?.screen;
-//     if (screen && navigationRef.isReady()) {
-//       navigationRef.navigate(screen);
-//     }
-//   });
-
-//   messaging().getInitialNotification().then(remoteMessage => {
-//     console.log('aaa')
-//     const screen = remoteMessage?.data?.screen;
-//     console.log(screen)
-
-//     if (screen) {
-//       const interval = setInterval(() => {
-//         if (navigationRef.isReady()) {
-//           navigationRef.navigate(screen);
-//           clearInterval(interval);
-//         }
-//       }, 300);
-//     }
-//   });
-// }
-
 const AppContent = () => {
-  // useEffect(() => {
-  //   messaging().setAutoInitEnabled(true);
-  //   requestNotificationPermission();
-  //   setupNotifications();
-  //   setupNotificationNavigationHandlers();
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [versionChecked, setVersionChecked] = useState(false);
+  const { openRetryModal, setOpenRetryModal } = useBLE();
+  const [updateDate, setUpdateDate] = useState('');
 
+  const handleRetryConfirm = () => setOpenRetryModal(false);
 
-  // }, []);
-  const [platform, setPlatform] = useState(Platform.OS); 
-  const {openRetryModal, setOpenRetryModal} = useBLE();
-
-  const handleRetryConfirm = () => {
-    setOpenRetryModal(false);
+  const handleUpdate = () => {
+    const url = Platform.OS === 'android'
+      ? 'https://play.google.com/store/apps/details?id=com.talktail'
+      : 'https://apps.apple.com/app/id6746703880';
+    Linking.openURL(url);
   };
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        await checkAppVersion(setShowUpdateModal, setUpdateDate);
+      } catch (e) {
+        console.error('버전 체크 실패:', e);
+      } finally {
+        setVersionChecked(true);
+      }
+    };
+    check();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = navigationRef.addListener('state', () => {
@@ -168,21 +78,32 @@ const AppContent = () => {
 
     return () => unsubscribe();
   }, []);
+
   useEffect(() => {
-    if (openRetryModal && platform === "ios") {
+    if (openRetryModal && Platform.OS === 'ios') {
       Alert.alert('디바이스 위치 조정', '다시 시도해 주세요', [
         {
-          text: "확인",
-          onPress: () => {
-            setOpenRetryModal(false);
-          }
-        }
+          text: '확인',
+          onPress: handleRetryConfirm,
+        },
       ]);
     }
   }, [openRetryModal]);
+
+  if (!versionChecked || showUpdateModal) {
+    return (
+      <UpdatePage
+        visible={showUpdateModal}
+        onUpdate={handleUpdate}
+        onClose={() => setShowUpdateModal(false)}
+        updateDate={updateDate}
+      />
+    );
+  }
+
   return (
     <>
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer>
         <Stack.Navigator
           initialRouteName="Login"
           screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFFFF' } }}
@@ -208,28 +129,26 @@ const AppContent = () => {
           <Stack.Screen name="CustomerService" component={CustomerService} />
         </Stack.Navigator>
       </NavigationContainer>
-      
-      {/* 전역 모달 */}
-      {platform === "android" ? (   <AlertModal
-        visible={openRetryModal}
-        title="디바이스 위치 조정"
-        content="다시 시도해 주세요"
-        onClose={handleRetryConfirm}
-      />) : ""}
-   
+
+      {Platform.OS === 'android' && (
+        <AlertModal
+          visible={openRetryModal}
+          title="디바이스 위치 조정"
+          content="다시 시도해 주세요"
+          onClose={handleRetryConfirm}
+        />
+      )}
     </>
   );
 };
 
-const App = () => {
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <BLEProvider>
-        <AppContent />
-      </BLEProvider>
-    </SafeAreaProvider>
-  );
-};
+const App = () => (
+  <SafeAreaProvider>
+    <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <BLEProvider>
+      <AppContent />
+    </BLEProvider>
+  </SafeAreaProvider>
+);
 
 export default App;

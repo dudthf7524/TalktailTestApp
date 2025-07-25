@@ -81,7 +81,7 @@ const MypageAgree = () => {
   }
   return (
    <>
-      <Header title="알림 설정" />
+      <Header title="수신 동의 설정" />
       <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.flex1}>
         <ScrollView contentContainerStyle={styles.container}>

@@ -177,6 +177,11 @@ export const dataStore = create<DataStore>((set, get) => ({
   downCSV: async (file_name: string, label: string) => {
     console.log('label:', label);
     console.log('file_name:', file_name);
+    // if (label && file_name) {
+    //   console.log('label:', label);
+    //   console.log('file_name:', file_name);
+    //   return;
+    // }
 
     try {
       set({ downCsvLoading: true, downCsvError: null, downCsvSuccess: false });
@@ -185,8 +190,13 @@ export const dataStore = create<DataStore>((set, get) => ({
       const extIndex = file_name.lastIndexOf('.');
       const ext = extIndex !== -1 ? file_name.substring(extIndex) : '.csv';
 
-      const safeLabel = label.replace(/[^\w\s.-]/g, '_');
+      // const safeLabel = label.replace(/[^\w\s.-]/g, '_');
+      const safeLabel = label.replace(/[^\w\s.\-가-힣]/g, '_');
+
       const baseFileName = `${safeLabel}_${date_time}${ext}`;
+
+      console.log("safeLabel", safeLabel)
+      console.log("baseFileName", baseFileName)
 
       // 1. 서버에서 CSV 데이터 가져오기
       const response = await axios({
@@ -214,6 +224,12 @@ export const dataStore = create<DataStore>((set, get) => ({
         // ✅ iOS: Document Picker를 통해 저장 위치 선택
         const tempPath = `${RNFS.DocumentDirectoryPath}/${baseFileName}`;
         await RNFS.writeFile(tempPath, response.data, 'utf8');
+
+        console.log(tempPath)
+
+        if(tempPath){
+          console.log("tempPath", tempPath)
+        }
 
         await Share.open({
           url: 'file://' + tempPath,
