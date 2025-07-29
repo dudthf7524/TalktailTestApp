@@ -8,12 +8,14 @@ const DashboardChart = ({screen} : {screen: string}) => {
   const [selectedView, setSelectedView] = useState<'heart' | 'temp' | 'both'>(screen === 'LANDSCAPE' ? 'both' : 'heart');
   const {state} = useBLE();
   const battery = state.currentBattery;
-  // console.log("component battery", battery);
+  console.log("state state", state);
+
+  console.log("component battery", battery);
   
   // 배터리 값에 따라 이미지 선택하는 함수
   const getBatteryImage = (batteryLevel: number | null) => {
     if (batteryLevel === null) return require("../assets/images/bat_100.png");
-    
+     
     if (batteryLevel === 100) {
       return require("../assets/images/bat_100.png");
     } else if (batteryLevel >= 75) {
@@ -24,6 +26,7 @@ const DashboardChart = ({screen} : {screen: string}) => {
       return require("../assets/images/bat_25.png");
     } else {
       return require("../assets/images/bat_0.png");
+      
     }
   };
   

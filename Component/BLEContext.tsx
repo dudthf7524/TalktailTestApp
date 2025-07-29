@@ -77,7 +77,6 @@ const bleReducer = (state: BLEState, action: BLEAction): BLEState => {
       }
       return {...state, chartData: newData};
     case 'COLLECT_DATAS':
-      console.log("action.payload : ", action.payload);
       return {
         ...state,
         collectedData: [...state.collectedData, ...action.payload],
@@ -167,6 +166,8 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
       const json2 = state.collectedData.find((item) => item.temp > 0);
       const json3 = state.collectedData.find((item) => item.battery > 0);
       
+      console.log("json3", json3?.battery)
+
       const irDataArray = state.collectedData
         .filter(item => item.ir > 0) // 유효한 ir 값만 필터링
         .map(item => item.ir);
@@ -178,18 +179,20 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
           payload: {
             spo2: json1?.spo2 ?? 0,
             hr: json1?.hr ?? 0,
+            battery: json3?.battery,
             temp: json2.temp,
             tempChartData: {value: json2.temp, timestamp: json2.timestamp},
             irChartData: irDataArray,
           }
         });
-      } else if (json3?.battery && json3?.battery > 0) {
+      } else if (json3?.battery && json3?.battery >= 0) {
+
         dispatch({
           type: "UPDATE_DATAS",
           payload: {
             spo2: json1?.spo2 ?? 0,
             hr: json1?.hr ?? 0,
-            battery: json3.battery,
+            battery: json3?.battery,
             temp: json2?.temp ?? 0,
             tempChartData: {value: json2?.temp ?? 0, timestamp: json2?.timestamp ?? 0},
             irChartData: irDataArray,
@@ -210,9 +213,7 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
       }
     }
     if ((state.collectedData.length + 1) / 500 > 1) {
-      // console.log(`${dayjs().format('mm:ss:SSS')} :data send`);
       const dataToSend = [...state.collectedData];
-      // console.log("dataToSend : ", dataToSend);
       dispatch({type: 'CLEAR_COLLECTED_DATA'});
       cntRef.current = 0; // 데이터 전송 시 cnt 초기화
 
