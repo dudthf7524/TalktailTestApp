@@ -52,17 +52,17 @@ const MypageChangeInfo = () => {
     org_phone: '',
     org_email: ''
   });
-  
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [openAlertModal, setOpenAlertModal] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [openMessageModal, setOpenMessageModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
-  const { 
-    org, 
-    loadOrg, 
-    changeInfo, 
-    changeInfoError, 
+  const {
+    org,
+    loadOrg,
+    changeInfo,
+    changeInfoError,
     changeInfoSuccess,
     offChangeInfoSuccess,
     offChangeInfoError
@@ -151,9 +151,9 @@ const MypageChangeInfo = () => {
     }
     try {
       const sendData = {
-        org_name: formData.org_name, 
-        org_address: formData.org_address, 
-        org_phone: formData.org_phone, 
+        org_name: formData.org_name,
+        org_address: formData.org_address,
+        org_phone: formData.org_phone,
         org_email: formData.org_email
       };
       await changeInfo(sendData);
@@ -183,6 +183,8 @@ const MypageChangeInfo = () => {
                       setFormData(prev => ({ ...prev, deviceCode: text }));
                     }}
                     placeholder="디바이스 코드를 입력하세요"
+                    placeholderTextColor="#999999"
+
                   />
                 </View>
                 {errors.deviceCode && (
@@ -200,6 +202,8 @@ const MypageChangeInfo = () => {
                     setErrors(prev => ({ ...prev, org_name: undefined }));
                   }}
                   placeholder="기관 이름을 입력하세요"
+                  placeholderTextColor="#999999"
+
                 />
                 {errors.org_name && (
                   <Text style={styles.errorText}>{errors.org_name}</Text>
@@ -216,6 +220,8 @@ const MypageChangeInfo = () => {
                     setErrors(prev => ({ ...prev, org_address: undefined }));
                   }}
                   placeholder="기관 주소를 입력하세요"
+                  placeholderTextColor="#999999"
+
                 />
                 {errors.org_address && (
                   <Text style={styles.errorText}>{errors.org_address}</Text>
@@ -232,6 +238,8 @@ const MypageChangeInfo = () => {
                     setErrors(prev => ({ ...prev, org_phone: undefined }));
                   }}
                   placeholder="010-0000-0000"
+                  placeholderTextColor="#999999"
+
                   keyboardType="phone-pad"
                   maxLength={13}
                 />
@@ -250,6 +258,8 @@ const MypageChangeInfo = () => {
                     setErrors(prev => ({ ...prev, org_email: undefined }));
                   }}
                   placeholder="이메일을 입력하세요"
+                  placeholderTextColor="#999999"
+
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
@@ -358,7 +368,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
   },
-  
+
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
