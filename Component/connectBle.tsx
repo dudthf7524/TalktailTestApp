@@ -413,9 +413,11 @@ const ConnectBle = ({ route }: Props) => {
     // console.log('🔔 handleUpdateValueForCharacteristic 호출됨:', new Date().toISOString());
 
     const parsedData = decodedValue.split(',').map(Number);
+      console.log("cnt : ", parsedData[0]);
+
     // console.log("ir : ", parsedData[1]);
     // console.log("red : ", parsedData[2]);
-    console.log("배터리 : ", parsedData[7]);
+    // console.log("배터리 : ", parsedData[7]);
 
     if (parsedData[1] < 110000) {
       // 버퍼 비우기
