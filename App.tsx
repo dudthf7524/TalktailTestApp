@@ -31,6 +31,8 @@ import Board from './Component/board';
 import BoardDetail from './Component/boardDetail';
 import CustomerService from './Component/customerService';
 import { RootStackParamList } from './types/navigation';
+import DeviceSetup from './Component/DeviceSetup';
+import EditDevice from './Component/EditDevice';
 
 export const navigationRef = createNavigationContainerRef();
 
@@ -127,6 +129,8 @@ const AppContent = () => {
           <Stack.Screen name="Board" component={Board} />
           <Stack.Screen name="BoardDetail" component={BoardDetail} />
           <Stack.Screen name="CustomerService" component={CustomerService} />
+          <Stack.Screen name="DeviceSetup" component={DeviceSetup} />
+          <Stack.Screen name="EditDevice" component={EditDevice} />
         </Stack.Navigator>
       </NavigationContainer>
 
