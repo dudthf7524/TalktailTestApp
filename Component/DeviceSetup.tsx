@@ -50,7 +50,7 @@ const DeviceSetup = () => {
     return (
         <>
             <Header title="디바이스 설정" />
-            <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
                 <View style={styles.inputGroup}>
                     <TextInput
                         style={styles.input}
@@ -74,7 +74,7 @@ const DeviceSetup = () => {
                         </TouchableOpacity>
                     )}
                 />
-            </SafeAreaView>
+            </View>
         </>
     );
 };
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 24,
+        padding: 20,
     },
     title: {
         fontSize: 22,
