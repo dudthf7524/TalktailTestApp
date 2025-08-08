@@ -173,7 +173,7 @@ const RegisterPet = ({ navigation }) => {
         history: formData.history,
         weight: formData.weight,
         vet: formData.vet,
-        species: formData.species, 
+        species: formData.species,
         device_code
       };
 
@@ -188,7 +188,7 @@ const RegisterPet = ({ navigation }) => {
       <Header title="동물 정보 등록" />
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardAvoidingView}
         >
           <ScrollView style={styles.scrollView}>
@@ -311,7 +311,7 @@ const RegisterPet = ({ navigation }) => {
                     ]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: true }))}
                   >
-                    {formData.gender ? <Image source={require("../assets/images/gender_white_male.png")} style={styles.gender_icon}/> : <Image source={require("../assets/images/gender_black_male.png")} style={styles.gender_icon}/>}
+                    {formData.gender ? <Image source={require("../assets/images/gender_white_male.png")} style={styles.gender_icon} /> : <Image source={require("../assets/images/gender_black_male.png")} style={styles.gender_icon} />}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
@@ -320,7 +320,7 @@ const RegisterPet = ({ navigation }) => {
                     ]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: false }))}
                   >
-                    {!formData.gender ? <Image source={require("../assets/images/gender_white_female.png")} style={styles.gender_icon}/> : <Image source={require("../assets/images/gender_black_female.png")} style={styles.gender_icon}/>}
+                    {!formData.gender ? <Image source={require("../assets/images/gender_white_female.png")} style={styles.gender_icon} /> : <Image source={require("../assets/images/gender_black_female.png")} style={styles.gender_icon} />}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -355,7 +355,7 @@ const RegisterPet = ({ navigation }) => {
                 </View>
               </View>
 
-             
+
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>입원일</Text>

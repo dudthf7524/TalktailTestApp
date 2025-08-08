@@ -167,7 +167,7 @@ const MypageChangeInfo = () => {
       <Header title="정보 수정" />
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.container}
         >
           <ScrollView style={styles.scrollView}>
