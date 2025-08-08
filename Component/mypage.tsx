@@ -116,14 +116,14 @@ const Mypage = () => {
             <Text style={styles.menuText}>공지 사항</Text>
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('DeviceSetup')}>
+          {/* <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('DeviceSetup')}>
             <Text style={styles.menuText}>디바이스 설정</Text>
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EditDevice')}>
             <Text style={styles.menuText}>디바이스 수정</Text>
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {/* <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('BatteryTest')}>
             <Text style={styles.menuText}>배터리 표시</Text>
             <Image source={require('../assets/images/right_btn.png')} style={styles.menuArrow} />

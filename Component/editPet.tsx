@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -11,6 +10,7 @@ import {
   Platform,
   Image
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from './header';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { userStore } from '../store/userStore';
@@ -172,7 +172,7 @@ const EditPet = () => {
   return (
     <>
       <Header title="동물 정보 수정" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardAvoidingView}
