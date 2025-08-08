@@ -21,4 +21,6 @@ export type RootStackParamList = {
   };
   CustomerService: undefined;
   BatteryTest: undefined;
+  DeviceSetup: undefined;
+  EditDevice: undefined;
 }; 
