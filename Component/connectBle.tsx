@@ -413,22 +413,22 @@ const ConnectBle = ({ route }: Props) => {
     // console.log('🔔 handleUpdateValueForCharacteristic 호출됨:', new Date().toISOString());
 
     const parsedData = decodedValue.split(',').map(Number);
-      console.log("cnt : ", parsedData[0]);
+    console.log("cnt : ", parsedData[0]);
 
     // console.log("ir : ", parsedData[1]);
     // console.log("red : ", parsedData[2]);
     // console.log("배터리 : ", parsedData[7]);
 
-    if (parsedData[1] < 110000) {
-      // 버퍼 비우기
-      dataBufferRef.current = [];
+    // if (parsedData[1] < 110000) {
+    //   // 버퍼 비우기
+    //   dataBufferRef.current = [];
 
-      // 팝업이 이미 표시되지 않은 경우에만 팝업 표시
-      if (!openRetryModal) {
-        setOpenRetryModal(true);
-      }
-      return; // 함수 종료
-    }
+    //   // 팝업이 이미 표시되지 않은 경우에만 팝업 표시
+    //   if (!openRetryModal) {
+    //     setOpenRetryModal(true);
+    //   }
+    //   return; // 함수 종료
+    // }
 
     dataBufferRef.current.push({
       data: parsedData,
