@@ -32,6 +32,7 @@ type RootStackParamList = {
       species: string;
       weight: string;
       vet: string;
+      fur_color: string;
     };
   };
   Dashboard: {
@@ -47,12 +48,12 @@ type RootStackParamList = {
       species: string;
       weight: string;
       vet: string;
+      fur_color: string;
     };
   };
   ConnectBle: undefined;
   Board: undefined;
-};
-
+}
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const PetLists = ({ navigation }) => {
@@ -74,9 +75,10 @@ const PetLists = ({ navigation }) => {
 
   const handleConnectBle = (pet: Pet) => {
     const selectedPet = pets.find((pet) => pet.pet_code === selectedPetId)
+    // console.log("selectedPet", selectedPet)
     navigation.navigate('ConnectBle', {
       selectedPet
-      }
+    }
     );
   };
 
@@ -98,7 +100,7 @@ const PetLists = ({ navigation }) => {
       </View>
     );
   }
-  if (deleteError) {  
+  if (deleteError) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>{deleteError}</Text>
@@ -109,19 +111,19 @@ const PetLists = ({ navigation }) => {
   const handleDelete = async () => {
     if (deletePetId) {
       await deletePet(deletePetId);
-      setOpenConfirmModal(false); 
+      setOpenConfirmModal(false);
       setOpenMessageModal(true);
       fetchPets();
     }
-  } 
+  }
 
   return (
     <>
       <Header title="등록 동물 정보" />
-      <SafeAreaView style={styles.container} edges={['bottom']}> 
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.petList}>
-            {pets.map((pet,index) => (
+            {pets.map((pet, index) => (
               <TouchableOpacity
                 key={index}
                 style={[
@@ -132,18 +134,18 @@ const PetLists = ({ navigation }) => {
               >
                 <View style={styles.petInfo}>
                   <View style={styles.nameContainer}>
-                    <View style={styles.name_box}><Image source={pet.gender ? require("../assets/images/gender_male.jpg") : require("../assets/images/gender_female.jpg")}  style={styles.gender_icon}/>
-                    <Text style={styles.petName}>{pet.name}</Text></View>
-                  
+                    <View style={styles.name_box}><Image source={pet.gender ? require("../assets/images/gender_male.jpg") : require("../assets/images/gender_female.jpg")} style={styles.gender_icon} />
+                      <Text style={styles.petName}>{pet.name}</Text></View>
+
                     <View style={styles.btn_box}>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         style={styles.btn}
                         onPress={() => navigation.navigate('EditPet', { pet })}
                       >
                         <Image source={require('../assets/images/btn_edit.png')} style={styles.btn_icon} />
                       </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={styles.btn} 
+                      <TouchableOpacity
+                        style={styles.btn}
                         onPress={() => {
                           setDeletePetId(pet.pet_code);
                           setOpenConfirmModal(true);
@@ -179,6 +181,9 @@ const PetLists = ({ navigation }) => {
                       <View style={styles.diseases_box}>
                         <Text style={styles.diseasesText}>과거병력 : {pet.history}</Text>
                       </View>
+                      <View style={styles.diseases_box}>
+                        <Text style={styles.diseasesText}>털색 : {pet.fur_color === 'light' ? '밝은색' : '어두운색'}</Text>
+                      </View>
                     </View>
                   )}
                   <TouchableOpacity
@@ -191,20 +196,20 @@ const PetLists = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
-            ))}  
-          <TouchableOpacity
-            style={[
-              styles.petCard,
-            ]}
-            onPress={() => navigation.navigate('RegisterPet')}
-          >
-            <View style={[styles.petInfo, styles.add_btn_box]}>
-              <Text style={styles.add_pet_text}></Text>
-              <Image source={require('../assets/images/plus_round_btn.png')} style={styles.add_pet_icon} />
-              <Text style={styles.add_pet_text}>동물 추가하기</Text>
-            </View>
-          </TouchableOpacity>
-   
+            ))}
+            <TouchableOpacity
+              style={[
+                styles.petCard,
+              ]}
+              onPress={() => navigation.navigate('RegisterPet')}
+            >
+              <View style={[styles.petInfo, styles.add_btn_box]}>
+                <Text style={styles.add_pet_text}></Text>
+                <Image source={require('../assets/images/plus_round_btn.png')} style={styles.add_pet_icon} />
+                <Text style={styles.add_pet_text}>동물 추가하기</Text>
+              </View>
+            </TouchableOpacity>
+
           </View>
         </ScrollView>
         <TouchableOpacity
@@ -375,7 +380,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
-  btn_icon : {
+  btn_icon: {
     width: '100%',
     height: '100%',
   },
@@ -385,7 +390,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  gender_breed_box :{
+  gender_breed_box: {
     width: '100%',
     height: 16,
     display: 'flex',
@@ -394,28 +399,28 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 0,
   },
-  gender_icon : {
+  gender_icon: {
     width: 16,
     height: 16,
   },
-  breed_text : {
+  breed_text: {
     width: 'auto',
     height: 20,
     fontSize: 14,
     color: '#666666',
     margin: 0,
   },
-  add_btn_box : {
+  add_btn_box: {
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  add_pet_icon : { 
+  add_pet_icon: {
     width: 60,
     height: 60,
   },
-  add_pet_text : {
+  add_pet_text: {
     height: 20,
     fontSize: 16,
     color: '#666666',

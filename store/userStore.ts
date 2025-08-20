@@ -1,7 +1,7 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import axios from 'axios';
-import {API_URL} from '../Component/constant/contants';
-import {getToken} from '../utils/storage';
+import { API_URL } from '../Component/constant/contants';
+import { getToken } from '../utils/storage';
 
 export interface Pet {
   device_code: string;
@@ -17,6 +17,7 @@ export interface Pet {
   species: string;
   weight: string;
   vet: string;
+  fur_color: string;
 }
 
 interface PetFormData {
@@ -32,6 +33,7 @@ interface PetFormData {
   weight: string;
   vet: string;
   device_code: string;
+  fur_color: string;
 }
 
 interface UserStore {
@@ -79,7 +81,7 @@ export const userStore = create<UserStore>((set, get) => ({
 
   fetchPets: async () => {
     try {
-      set({loadLoading: true, loadError: null, loadSuccess: false});
+      set({ loadLoading: true, loadError: null, loadSuccess: false });
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
@@ -89,7 +91,7 @@ export const userStore = create<UserStore>((set, get) => ({
         device_code: token.device_code,
       });
 
-      set({pets: response.data, loadLoading: false, loadSuccess: true});
+      set({ pets: response.data, loadLoading: false, loadSuccess: true });
     } catch (error) {
       set({
         loadError:
@@ -105,7 +107,7 @@ export const userStore = create<UserStore>((set, get) => ({
 
   registerPet: async (formData: PetFormData) => {
     try {
-      set({registerLoading: true, registerError: null, registerSuccess: false});
+      set({ registerLoading: true, registerError: null, registerSuccess: false });
       const response = await axios.post(`${API_URL}/pet/register`, formData);
 
       if (response.status === 200) {
@@ -135,7 +137,7 @@ export const userStore = create<UserStore>((set, get) => ({
 
   updatePet: async (petData: any) => {
     try {
-      set({updateLoading: true, updateError: null, updateSuccess: false});
+      set({ updateLoading: true, updateError: null, updateSuccess: false });
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
@@ -168,7 +170,7 @@ export const userStore = create<UserStore>((set, get) => ({
 
   deletePet: async (petCode: string) => {
     try {
-      set({deleteLoading: true, deleteError: null, deleteSuccess: false});
+      set({ deleteLoading: true, deleteError: null, deleteSuccess: false });
       const token = await getToken();
       if (!token) {
         throw new Error('토큰이 없습니다.');
@@ -213,24 +215,23 @@ export const userStore = create<UserStore>((set, get) => ({
   },
 
   offLoadSuccess: () => {
-    set({loadSuccess: false});
+    set({ loadSuccess: false });
   },
   offLoadError: () => {
-    set({loadError: null});
+    set({ loadError: null });
   },
   offRegisterSuccess: () => {
-    set({registerSuccess: false});
+    set({ registerSuccess: false });
   },
   offRegisterError: () => {
-    set({registerError: null});
+    set({ registerError: null });
   },
-  offUpdateSuccess: () => set({updateSuccess: false}),
-  offUpdateError: () => set({updateError: null}),
+  offUpdateSuccess: () => set({ updateSuccess: false }),
+  offUpdateError: () => set({ updateError: null }),
   offDeleteSuccess: () => {
-    set({deleteSuccess: false});
+    set({ deleteSuccess: false });
   },
   offDeleteError: () => {
-    set({deleteError: null});
+    set({ deleteError: null });
   },
 }));
- 

@@ -29,6 +29,7 @@ type PetData = {
   history: string;
   species: string;
   admission: Date;
+  fur_color: string;
 };
 
 const RegisterPet = ({ navigation }) => {
@@ -36,6 +37,7 @@ const RegisterPet = ({ navigation }) => {
   const { registerPet, registerLoading, registerSuccess, registerError, offRegisterSuccess, offRegisterError } = userStore();
   const [openAlertModal, setOpenAlertModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
+  const [showFurColorInfo, setShowFurColorInfo] = useState(false);
   const [formData, setFormData] = useState<PetData>({
     name: '',
     birth: new Date(2020, 0, 1),
@@ -48,6 +50,7 @@ const RegisterPet = ({ navigation }) => {
     history: '',
     species: '',
     admission: new Date(),
+    fur_color: 'light',
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -174,6 +177,7 @@ const RegisterPet = ({ navigation }) => {
         weight: formData.weight,
         vet: formData.vet,
         species: formData.species,
+        fur_color: formData.fur_color,
         device_code
       };
 
@@ -355,7 +359,47 @@ const RegisterPet = ({ navigation }) => {
                 </View>
               </View>
 
-
+              <View style={styles.inputGroup}>
+                <View style={styles.labelContainer}>
+                  <Text style={styles.label}>털색 </Text>
+                  <TouchableOpacity onPress={() => setShowFurColorInfo(true)}>
+                    <Text style={styles.help}
+                    >
+                      {/* <Image
+                      source={require("../assets/images/help_icon.png")}
+                      style={styles.helpIcon}
+                    /> */}
+                      ?
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.radioGroup}>
+                  <TouchableOpacity
+                    style={[
+                      styles.radioButton,
+                      formData.fur_color === 'light' && styles.radioButtonSelected,
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, fur_color: 'light' }))}
+                  >
+                    <Text style={[
+                      styles.radioButtonText,
+                      formData.fur_color === 'light' && styles.radioButtonTextSelected,
+                    ]}>밝은색</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.radioButton,
+                      formData.fur_color === 'dark' && styles.radioButtonSelected,
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, fur_color: 'dark' }))}
+                  >
+                    <Text style={[
+                      styles.radioButtonText,
+                      formData.fur_color === 'dark' && styles.radioButtonTextSelected,
+                    ]}>어두운색</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>입원일</Text>
@@ -463,6 +507,17 @@ const RegisterPet = ({ navigation }) => {
         content={modalContent.content}
         onClose={() => setOpenAlertModal(false)}
       />
+
+      <AlertModal
+        visible={showFurColorInfo}
+        title="털색 구분 기준"
+        content={`밝은색: 흰색, 크림색, 베이지, 황금색, 밝은 갈색 등
+
+어두운색: 검은색, 진갈색, 회색, 짙은 갈색 등
+
+털색은 펫의 주요 털색을 기준으로 선택해주세요.`}
+        onClose={() => setShowFurColorInfo(false)}
+      />
     </>
   );
 };
@@ -494,6 +549,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: '#F5B75C',
+  },
+  help: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    // color: '#F0663F',
+     color: '#000',
   },
   input: {
     borderWidth: 1,
@@ -595,6 +657,24 @@ const styles = StyleSheet.create({
   },
   submitButtonDisabled: {
     backgroundColor: '#cccccc',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  helpIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#F0663F',
   },
 });
 

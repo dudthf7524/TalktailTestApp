@@ -45,6 +45,7 @@ type RootStackParamList = {
       breed: string;
       isNeutered: boolean;
       disease: string;
+      fur_color:string;
     };
   };
   Dashboard: {
@@ -77,7 +78,9 @@ const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 console.log("1111bleManagerEmitter : ", bleManagerEmitter);
 
 const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const CHARACTERISTIC_UUID_RX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const CHARACTERISTIC_UUID_RX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // 읽기용 (Notify)
+const CHARACTERISTIC_UUID_TX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // 쓰기용 (Write)
+
 
 // 스캔 관련 상수 추가
 const SECONDS_TO_SCAN_FOR = 30;
@@ -86,6 +89,7 @@ const ALLOW_DUPLICATES = true;
 const ConnectBle = ({ route }: Props) => {
 
   const { selectedPet } = route.params;
+  console.log("selectedPet", selectedPet)
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dispatch, openRetryModal, setOpenRetryModal } = useBLE();
   const [isScanning, setIsScanning] = useState(false);
@@ -98,6 +102,31 @@ const ConnectBle = ({ route }: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [dataBuffer, setDataBuffer] = useState<number[]>([]);
   const deviceFoundRef = useRef(false);
+
+  const sendTextToESP32 = async (deviceId: string, text: string): Promise<boolean> => {
+    try {
+      console.log('📤 ESP32로 텍스트 전송:', text);
+      console.log('📤 ESP32로 deviceId 전송:', deviceId);
+
+      // 문자열을 바이트 배열로 변환
+      const textBytes: number[] = Array.from(text, (char: string) => char.charCodeAt(0));
+
+      // BLE Write 실행 (TX characteristic 사용)
+      await BleManager.write(
+        deviceId,                    // 연결된 디바이스 ID
+        SERVICE_UUID,               // 서비스 UUID
+        CHARACTERISTIC_UUID_TX,     // 쓰기용 특성 UUID
+        textBytes                   // 전송할 데이터 (바이트 배열)
+      );
+
+      console.log('✅ 텍스트 전송 성공!');
+      return true;
+
+    } catch (error) {
+      console.error('❌ 텍스트 전송 실패:', error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     let isSubscribed = true;
@@ -345,6 +374,8 @@ const ConnectBle = ({ route }: Props) => {
       await BleManager.connect(deviceId);
 
       // 연결 상태 업데이트
+      setIsConnected(true);
+      setSelectedDevice(deviceId);
       dispatch({
         type: 'CONNECT_DEVICE',
         payload: {
@@ -379,6 +410,7 @@ const ConnectBle = ({ route }: Props) => {
             'Notification started on characteristic:',
             CHARACTERISTIC_UUID_RX,
           );
+          console.log("deviceId", deviceId)
           setIsSubscribed(true);
         })
         .catch(error => {
@@ -389,9 +421,17 @@ const ConnectBle = ({ route }: Props) => {
         title: '연결 성공',
         content: '디바이스가 연결되었습니다.',
       });
+
       setOpenMessageModal(true);
+
+      // 연결 성공 후 약간의 딜레이를 주고 데이터 전송
+      setTimeout(() => {
+        sendTextToESP32(deviceId, selectedPet.fur_color);
+      }, 500);
     } catch (error) {
       console.error('Connection error:', error);
+      setIsConnected(false);
+      setSelectedDevice(null);
       dispatch({ type: 'CONNECT_DEVICE', payload: null });
       setIsSubscribed(false);
       setModalContent({
@@ -413,9 +453,9 @@ const ConnectBle = ({ route }: Props) => {
     // console.log('🔔 handleUpdateValueForCharacteristic 호출됨:', new Date().toISOString());
 
     const parsedData = decodedValue.split(',').map(Number);
-    console.log("cnt : ", parsedData[0]);
+    // console.log("cnt : ", parsedData[0]);
 
-    // console.log("ir : ", parsedData[1]);
+    console.log("ir : ", parsedData[1]);
     // console.log("red : ", parsedData[2]);
     // console.log("배터리 : ", parsedData[7]);
 
@@ -496,6 +536,7 @@ const ConnectBle = ({ route }: Props) => {
     dispatch({ type: 'CONNECT_DEVICE', payload: null });
     dispatch({ type: 'CLEAR_COLLECTED_DATA' });
     setIsSubscribed(false);
+    setIsConnected(false);
     setSelectedDevice(null);
 
     // peripherals 맵 업데이트
@@ -562,6 +603,7 @@ const ConnectBle = ({ route }: Props) => {
         console.log('Disconnected from device:', selectedDevice);
 
         // 연결 해제 시 상태 업데이트
+        setIsConnected(false);
         dispatch({ type: 'CONNECT_DEVICE', payload: null });
         dispatch({ type: 'CLEAR_COLLECTED_DATA' });
         setPeripherals(map => {
@@ -647,6 +689,7 @@ const ConnectBle = ({ route }: Props) => {
           onPress={handleMonitoring}>
           <Text style={styles.buttonText}>모니터링 하기</Text>
         </Pressable>
+       
         {/* <Pressable
           style={({ pressed }) => [
             styles.monitoringButton,

@@ -40,17 +40,19 @@ type PetData = {
   vet: string;
   history: string;
   species: string;
+  fur_color: string;
   admission: Date;
 };
 
 const EditPet = () => {
+  const [showFurColorInfo, setShowFurColorInfo] = useState(false);
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute();
   const { pet } = route.params as { pet: any };
-  const { 
-    updatePet, 
+  const {
+    updatePet,
     updateLoading,
-    updateSuccess, 
+    updateSuccess,
     updateError,
     offUpdateSuccess,
     offUpdateError
@@ -68,6 +70,7 @@ const EditPet = () => {
     history: pet.history || '',
     species: pet.species || '',
     admission: pet.admission ? new Date(pet.admission) : new Date(),
+    fur_color: pet.fur_color || '',
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'birth' | 'admission'>('birth');
@@ -149,11 +152,11 @@ const EditPet = () => {
       const petData = {
         ...formData,
         birth: formData.birth.getFullYear().toString() + '-' +
-               (formData.birth.getMonth() + 1).toString().padStart(2, '0') + '-' +
-               formData.birth.getDate().toString().padStart(2, '0'),
+          (formData.birth.getMonth() + 1).toString().padStart(2, '0') + '-' +
+          formData.birth.getDate().toString().padStart(2, '0'),
         admission: formData.admission.getFullYear().toString() + '-' +
-                  (formData.admission.getMonth() + 1).toString().padStart(2, '0') + '-' +
-                  formData.admission.getDate().toString().padStart(2, '0'),
+          (formData.admission.getMonth() + 1).toString().padStart(2, '0') + '-' +
+          formData.admission.getDate().toString().padStart(2, '0'),
         device_code,
         pet_code: pet.pet_code
       };
@@ -257,8 +260,8 @@ const EditPet = () => {
                     ]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: true }))}
                   >
-                    {formData.gender ? <Image source={require("../assets/images/gender_white_male.png")} style={styles.gender_icon}/> : <Image source={require("../assets/images/gender_black_male.png")} style={styles.gender_icon}/>}
-                    </TouchableOpacity>
+                    {formData.gender ? <Image source={require("../assets/images/gender_white_male.png")} style={styles.gender_icon} /> : <Image source={require("../assets/images/gender_black_male.png")} style={styles.gender_icon} />}
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.radioButton,
@@ -266,8 +269,8 @@ const EditPet = () => {
                     ]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: false }))}
                   >
-                    {!formData.gender ? <Image source={require("../assets/images/gender_white_female.png")} style={styles.gender_icon}/> : <Image source={require("../assets/images/gender_black_female.png")} style={styles.gender_icon}/>}
-                    </TouchableOpacity>
+                    {!formData.gender ? <Image source={require("../assets/images/gender_white_female.png")} style={styles.gender_icon} /> : <Image source={require("../assets/images/gender_black_female.png")} style={styles.gender_icon} />}
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -300,7 +303,47 @@ const EditPet = () => {
                   </TouchableOpacity>
                 </View>
               </View>
-
+              <View style={styles.inputGroup}>
+                <View style={styles.labelContainer}>
+                  <Text style={styles.label}>털색 </Text>
+                  <TouchableOpacity onPress={() => setShowFurColorInfo(true)}>
+                    <Text style={styles.help}
+                    >
+                      {/* <Image
+                      source={require("../assets/images/help_icon.png")}
+                      style={styles.helpIcon}
+                    /> */}
+                      ?
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.radioGroup}>
+                  <TouchableOpacity
+                    style={[
+                      styles.radioButton,
+                      formData.fur_color === 'light' && styles.radioButtonSelected,
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, fur_color: 'light' }))}
+                  >
+                    <Text style={[
+                      styles.radioButtonText,
+                      formData.fur_color === 'light' && styles.radioButtonTextSelected,
+                    ]}>밝은색</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.radioButton,
+                      formData.fur_color === 'dark' && styles.radioButtonSelected,
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, fur_color: 'dark' }))}
+                  >
+                    <Text style={[
+                      styles.radioButtonText,
+                      formData.fur_color === 'dark' && styles.radioButtonTextSelected,
+                    ]}>어두운색</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>입원일</Text>
                 <TouchableOpacity
@@ -364,8 +407,8 @@ const EditPet = () => {
                 />
               </View>
 
-              <TouchableOpacity 
-                style={[styles.submitButton, updateLoading && styles.submitButtonDisabled]} 
+              <TouchableOpacity
+                style={[styles.submitButton, updateLoading && styles.submitButtonDisabled]}
                 onPress={() => setOpenConfirmModal(true)}
                 disabled={updateLoading}
               >
@@ -397,6 +440,16 @@ const EditPet = () => {
         title={modalContent.title}
         content={modalContent.content}
         onClose={() => setOpenMessageModal(false)}
+      />
+      <AlertModal
+        visible={showFurColorInfo}
+        title="털색 구분 기준"
+        content={`밝은색: 흰색, 크림색, 베이지, 황금색, 밝은 갈색 등
+
+어두운색: 검은색, 진갈색, 회색, 짙은 갈색 등
+
+털색은 펫의 주요 털색을 기준으로 선택해주세요.`}
+        onClose={() => setShowFurColorInfo(false)}
       />
     </>
   );
@@ -525,6 +578,18 @@ const styles = StyleSheet.create({
   },
   submitButtonDisabled: {
     backgroundColor: '#cccccc',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  help: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    // color: '#F0663F',
+    color: '#000',
   },
 });
 
