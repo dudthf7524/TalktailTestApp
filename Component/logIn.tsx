@@ -137,13 +137,13 @@ const Login = ({ navigation }: { navigation: NavigationProp }) => {
     }
   }, [loginError]);
 
-  useEffect(() => {
-    Orientation.lockToPortrait();
+  // useEffect(() => {
+  //   Orientation.lockToPortrait();
 
-    return () => {
-      Orientation.unlockAllOrientations();
-    };
-  }, []);
+  //   return () => {
+  //     Orientation.unlockAllOrientations();
+  //   };
+  // }, []);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};

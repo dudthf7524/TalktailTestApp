@@ -66,20 +66,20 @@ const AppContent = () => {
     check();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = navigationRef.addListener('state', () => {
-      const currentRoute = navigationRef.getCurrentRoute();
-      const currentScreen = currentRoute?.name;
+  // useEffect(() => {
+  //   const unsubscribe = navigationRef.addListener('state', () => {
+  //     const currentRoute = navigationRef.getCurrentRoute();
+  //     const currentScreen = currentRoute?.name;
 
-      if (currentScreen === 'Login') {
-        Orientation.lockToPortrait();
-      } else {
-        Orientation.unlockAllOrientations();
-      }
-    });
+  //     if (currentScreen === 'Login') {
+  //       Orientation.lockToPortrait();
+  //     } else {
+  //       Orientation.unlockAllOrientations();
+  //     }
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   useEffect(() => {
     if (openRetryModal && Platform.OS === 'ios') {
