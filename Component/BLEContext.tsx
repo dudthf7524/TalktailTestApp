@@ -21,6 +21,7 @@ interface BLEState {
     deviceCode: string;
     petCode: string;
   } | null;
+  deviceId: string | null;
   chartData: number[];
   collectedData: DataPoint[];
   currentHR: number | null;
@@ -29,6 +30,8 @@ interface BLEState {
   tempChartData: Array<{value: number; timestamp: number}>;
   irChartData: number[];
   currentBattery: number | null;
+  isErrorMarked: boolean;
+  currentPA: {name: string; value: string; timestamp: string} | null;
 }
 
 // 액션 타입 정의
@@ -42,6 +45,7 @@ type BLEAction =
         petCode: string;
       } | null;
     }
+  | {type: 'SET_DEVICE_ID'; payload: string | null}
   | {type: 'UPDATE_CHART_DATA'; payload: number; skipAnimation: boolean}
   | {type: 'COLLECT_DATAS'; payload: DataPoint[]}
   | {type: 'CLEAR_COLLECTED_DATA'}
@@ -50,11 +54,15 @@ type BLEAction =
   | {type: 'UPDATE_SPO2_HR'; payload: {spo2: number; hr: number}}
   | {type: 'UPDATE_TEMP'; payload: {value: number; timestamp: number}}
   | {type: 'UPDATE_BATTERY'; payload: number}
-  | {type: 'UPDATE_DATAS'; payload: {hr?: number; spo2?: number; temp?: number; battery?: number; tempChartData?: {value: number; timestamp: number}; irChartData?: number[]} };
+  | {type: 'UPDATE_DATAS'; payload: {hr?: number; spo2?: number; temp?: number; battery?: number; tempChartData?: {value: number; timestamp: number}; irChartData?: number[]} }
+  | {type: 'SET_ERROR_MARKED'; payload: boolean}
+  | {type: 'SET_CURRENT_PA'; payload: {name: string; value: string; timestamp: string} | null}
+  | {type: 'INSERT_SEPARATOR'};
 
 // 초기 상태
 const initialState: BLEState = {
   connectedDevice: null,
+  deviceId: null,
   chartData: [],
   collectedData: [],
   currentHR: null,
@@ -63,6 +71,8 @@ const initialState: BLEState = {
   tempChartData: [],
   irChartData: [],
   currentBattery: null,
+  isErrorMarked: false,
+  currentPA: null,
 };
 
 // 리듀서 함수
@@ -70,6 +80,8 @@ const bleReducer = (state: BLEState, action: BLEAction): BLEState => {
   switch (action.type) {
     case 'CONNECT_DEVICE':
       return {...state, connectedDevice: action.payload};
+    case 'SET_DEVICE_ID':
+      return {...state, deviceId: action.payload};
     case 'UPDATE_CHART_DATA':
       const newData = [...state.chartData, action.payload];
       if (newData.length > 500) {
@@ -124,6 +136,25 @@ const bleReducer = (state: BLEState, action: BLEAction): BLEState => {
         tempChartData: newTempData,
         irChartData: newIrData,
       };
+    case 'SET_ERROR_MARKED':
+      return {...state, isErrorMarked: action.payload};
+    case 'SET_CURRENT_PA':
+      return {...state, currentPA: action.payload};
+    case 'INSERT_SEPARATOR':
+      const separatorData: DataPoint = {
+        timestamp: Date.now(),
+        ir: -1,
+        red: -1,
+        green: -1,
+        spo2: -1,
+        hr: -1,
+        temp: -1,
+        battery: -1,
+      };
+      return {
+        ...state,
+        collectedData: [...state.collectedData, separatorData],
+      };
     default:
       return state;
   }
@@ -139,6 +170,9 @@ const BLEContext = createContext<
       getConnectedDevice: () => BLEState['connectedDevice'];
       openRetryModal: boolean;
       setOpenRetryModal: (open: boolean) => void;
+      setErrorMarked: (marked: boolean) => void;
+      setCurrentPA: (pa: {name: string; value: string; timestamp: string} | null) => void;
+      insertSeparator: () => void;
     }
   | undefined
 >(undefined);
@@ -155,6 +189,7 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
   const {sendData} = dataStore();
   const cntRef = useRef(0); // cnt를 useRef로 관리
   const [openRetryModal, setOpenRetryModal] = useState(false);
+  const isFirstSaveRef = useRef(true); // 새 연결 후 첫 저장인지 추적
  
   globalGetConnectedDevice = () => state.connectedDevice;
 
@@ -220,10 +255,17 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
       if (state.connectedDevice) {
         // 비동기로 서버 전송 (메인 스레드 블로킹 방지)
         setTimeout(() => {
-                  // 타입 캐스팅으로 타입 에러 해결
-        sendData(dataToSend as any, state.connectedDevice!)
+          // 타입 캐스팅으로 타입 에러 해결
+          sendData(
+            dataToSend as any, 
+            state.connectedDevice!, 
+            isFirstSaveRef.current,
+            state.isErrorMarked,
+            state.currentPA
+          )
             .then(() => {
               console.log('데이터 전송 완료');
+              isFirstSaveRef.current = false; // 첫 저장 완료 후 플래그 변경
             })
             .catch(error => {
               console.error('Error sending data:', error);
@@ -237,8 +279,37 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
 
   // 디바이스 연결 상태 변경 감지
   React.useEffect(() => {
-    if (!state.connectedDevice) {
+    if (!state.connectedDevice && state.collectedData.length > 0) {
+      // 연결이 끊어질 때 남은 데이터가 있으면 저장
+      const dataToSend = [...state.collectedData];
+      dispatch({type: 'CLEAR_COLLECTED_DATA'});
+      cntRef.current = 0;
+      
+      // 디바이스 정보가 있었다면 저장
+      if (globalGetConnectedDevice && globalGetConnectedDevice()) {
+        const deviceInfo = globalGetConnectedDevice();
+        setTimeout(() => {
+          sendData(
+            dataToSend as any, 
+            deviceInfo!, 
+            false,
+            state.isErrorMarked,
+            state.currentPA
+          )
+            .then(() => {
+              console.log('연결 종료 시 남은 데이터 저장 완료');
+            })
+            .catch(error => {
+              console.error('연결 종료 시 데이터 저장 에러:', error);
+            });
+        }, 0);
+      }
+    } else if (!state.connectedDevice) {
       cntRef.current = 0; // 디바이스 연결이 끊어질 때 cnt 초기화
+      isFirstSaveRef.current = true; // 새 연결을 위해 플래그 리셋
+    } else if (state.connectedDevice) {
+      // 새로운 디바이스가 연결될 때 첫 저장 플래그를 true로 설정
+      isFirstSaveRef.current = true;
     }
   }, [state.connectedDevice]);
 
@@ -265,9 +336,22 @@ export const BLEProvider: React.FC<{children: React.ReactNode}> = ({
     }
   }, [state.connectedDevice]);
 
+  const setErrorMarked = React.useCallback((marked: boolean) => {
+    dispatch({type: 'SET_ERROR_MARKED', payload: marked});
+  }, []);
+  
+  
+  const setCurrentPA = React.useCallback((pa: {name: string; value: string; timestamp: string} | null) => {
+    dispatch({type: 'SET_CURRENT_PA', payload: pa});
+  }, []);
+
+  const insertSeparator = React.useCallback(() => {
+    dispatch({type: 'INSERT_SEPARATOR'});
+  }, []);
+
   return (
     <BLEContext.Provider
-      value={{state, dispatch, addChartData, getConnectedDevice, openRetryModal, setOpenRetryModal}}>
+      value={{state, dispatch, addChartData, getConnectedDevice, openRetryModal, setOpenRetryModal, setErrorMarked, setCurrentPA, insertSeparator}}>
       {children}
     </BLEContext.Provider>
   );

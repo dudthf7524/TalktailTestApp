@@ -45,7 +45,7 @@ type RootStackParamList = {
       breed: string;
       isNeutered: boolean;
       disease: string;
-      fur_color:string;
+      fur_color: string;
     };
   };
   Dashboard: {
@@ -86,9 +86,67 @@ const CHARACTERISTIC_UUID_TX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // 쓰기
 const SECONDS_TO_SCAN_FOR = 30;
 const ALLOW_DUPLICATES = true;
 
+const pet = {
+  admission
+    :
+    "2025-07-23",
+  birth
+    :
+    "2020-01-07",
+  breed
+    :
+    "말티즈",
+  createdAt
+    :
+    "2025-07-25T08:48:49.000Z",
+  device_code
+    :
+    "aa",
+  disease
+    :
+    "지금아픔",
+  fur_color
+    :
+    "light",
+  gender
+    :
+    false,
+  history
+    :
+    "예전에 아픔",
+  id
+    :
+    1,
+  name
+    :
+    "김개",
+  neutered
+    :
+    true,
+  pet_code
+    :
+    "aa_20250725174849",
+  species
+    :
+    "개",
+  updatedAt
+    :
+    "2025-07-25T08:48:49.000Z",
+  vet
+    :
+    "김주치의",
+  weight
+    :
+    "12",
+}
+
 const ConnectBle = ({ route }: Props) => {
 
-  const { selectedPet } = route.params;
+  // const { selectedPet } = route.params;
+
+  const selectedPet = pet;
+
+
   console.log("selectedPet", selectedPet)
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dispatch, openRetryModal, setOpenRetryModal } = useBLE();
@@ -396,6 +454,9 @@ const ConnectBle = ({ route }: Props) => {
         return newPeripherals;
       });
 
+      // deviceId를 BLEContext에 저장
+      dispatch({ type: 'SET_DEVICE_ID', payload: deviceId });
+
       // 서비스 및 특성 검색
       const peripheralInfo = await BleManager.retrieveServices(deviceId);
 
@@ -453,9 +514,11 @@ const ConnectBle = ({ route }: Props) => {
     // console.log('🔔 handleUpdateValueForCharacteristic 호출됨:', new Date().toISOString());
 
     const parsedData = decodedValue.split(',').map(Number);
+    console.log("parsedData : ", parsedData);
+
     // console.log("cnt : ", parsedData[0]);
 
-    console.log("ir : ", parsedData[1]);
+    // console.log("ir : ", parsedData[1]);
     // console.log("red : ", parsedData[2]);
     // console.log("배터리 : ", parsedData[7]);
 
@@ -689,7 +752,7 @@ const ConnectBle = ({ route }: Props) => {
           onPress={handleMonitoring}>
           <Text style={styles.buttonText}>모니터링 하기</Text>
         </Pressable>
-       
+
         {/* <Pressable
           style={({ pressed }) => [
             styles.monitoringButton,

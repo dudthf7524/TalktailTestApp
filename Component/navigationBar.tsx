@@ -9,6 +9,7 @@ type RootStackParamList = {
   ConnectBle: undefined;
   PetLists: undefined;
   Record: undefined;
+  LocalFiles: undefined;
   Mypage: undefined;
 };
 
@@ -33,6 +34,12 @@ const NavigationBar: React.FC = () => {
       >
         {/* <Text style={styles.buttonText}>데이터목록</Text> */}
         <Image source={require("../assets/images/nav_icon2.png")} style={styles.icon_img} />
+      </Pressable>
+      <Pressable 
+        style={styles.button}
+        onPress={() => navigation.navigate('LocalFiles')}
+      >
+        <Text style={styles.buttonText}>로컬파일</Text>
       </Pressable>
       <Pressable 
         style={styles.button}

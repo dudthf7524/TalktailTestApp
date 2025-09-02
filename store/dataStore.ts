@@ -6,6 +6,8 @@ import RNFS from 'react-native-fs';
 import dayjs from 'dayjs';
 import Share from 'react-native-share';
 import { Alert, Platform } from 'react-native';
+import { checkInternetConnection } from '../utils/networkUtils';
+import { saveDataToLocal } from '../utils/localStorageUtils';
 
 
 interface DataPoint {
@@ -55,6 +57,9 @@ interface DataStore {
       deviceCode: string;
       petCode: string;
     },
+    isFirstSave?: boolean,
+    isErrorMarked?: boolean,
+    currentPA?: {name: string; value: string; timestamp: string} | null
   ) => Promise<void>;
   downCSV: (file_name: string, label: string) => Promise<void>;
   deleteCSV: (file_name: string) => Promise<void>;
@@ -112,8 +117,34 @@ export const dataStore = create<DataStore>((set, get) => ({
       deviceCode: string;
       petCode: string;
     },
+    isFirstSave: boolean = false,
+    isErrorMarked: boolean = false,
+    currentPA?: {name: string; value: string; timestamp: string} | null
   ) => {
     console.log(`sendData 진입 시간 : ${dayjs().format('mm:ss:SSS')}`);
+    
+    // 인터넷 연결 상태 확인
+    const isConnected = await checkInternetConnection();
+    
+    if (!isConnected) {
+      // 인터넷 연결이 없으면 로컬에 저장
+      try {
+        const fileName = await saveDataToLocal(data, deviceInfo, isFirstSave, isErrorMarked, currentPA);
+        console.log(`인터넷 연결 없음 - 로컬 저장 완료: ${fileName}`);
+        return;
+      } catch (error) {
+        console.error('로컬 저장 실패:', error);
+        set({
+          createError:
+            error instanceof Error
+              ? error.message
+              : '로컬 저장에 실패했습니다.',
+        });
+        return;
+      }
+    }
+    
+    // 인터넷 연결이 있으면 서버로 전송
     try {
       const response = await axios.post(`${API_URL}/data/send`, {
         data,
@@ -125,15 +156,30 @@ export const dataStore = create<DataStore>((set, get) => ({
         console.log(`데이터 전송 성공 : ${dayjs().format('mm:ss:SSS')}`);
       } else {
         console.error('데이터 전송 실패');
+        // 서버 전송 실패 시 로컬에 백업 저장
+        try {
+          const fileName = await saveDataToLocal(data, deviceInfo, isFirstSave, isErrorMarked, currentPA);
+          console.log(`서버 전송 실패 - 로컬 백업 저장: ${fileName}`);
+        } catch (backupError) {
+          console.error('로컬 백업 저장 실패:', backupError);
+        }
       }
     } catch (error) {
       console.error('데이터 전송 에러:', error);
-      set({
-        createError:
-          error instanceof Error
-            ? error.message
-            : '데이터 전송에 실패했습니다.',
-      });
+      
+      // 서버 전송 에러 시 로컬에 백업 저장
+      try {
+        const fileName = await saveDataToLocal(data, deviceInfo, isFirstSave, isErrorMarked, currentPA);
+        console.log(`서버 전송 에러 - 로컬 백업 저장: ${fileName}`);
+      } catch (backupError) {
+        console.error('로컬 백업 저장 실패:', backupError);
+        set({
+          createError:
+            error instanceof Error
+              ? error.message
+              : '데이터 전송 및 로컬 저장에 실패했습니다.',
+        });
+      }
     }
   },
   loadData: async (date: string, pet_code: string) => {

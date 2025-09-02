@@ -20,6 +20,11 @@ export type RootStackParamList = {
     board_code: string;
   };
   CustomerService: undefined;
+  LocalFiles: undefined;
+  CsvViewer: {
+    filePath: string;
+    fileName: string;
+  };
   BatteryTest: undefined;
   DeviceSetup: undefined;
   EditDevice: undefined;

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,14 +9,15 @@ import {
   AppState,
   Image,
 } from 'react-native';
-import {RouteProp} from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 import Header from './header';
 import NavigationBar from './navigationBar';
-import {Buffer} from 'buffer';
+import { Buffer } from 'buffer';
 import DashboardInfo from './dashboardInfo';
 import DashboardChart from './dashboardChart';
 import DashboardData from './dashboardData';
-import {useBLE} from './BLEContext';
+import PASelector from './PASelector';
+import { useBLE } from './BLEContext';
 
 type RootStackParamList = {
   Dashboard: {
@@ -43,10 +44,10 @@ const windowWidth = Dimensions.get('window').width;
 
 // BLE 관련 코드는 connectBle.tsx에서만 처리
 
-const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
-  const {dispatch, openRetryModal, setOpenRetryModal} = useBLE();
-  const {selectedPet} = route.params;
-  const {state} = useBLE(); // BLEContext 사용
+const Dashboard = ({ route }: { route: DashboardScreenRouteProp }) => {
+  const { dispatch, openRetryModal, setOpenRetryModal } = useBLE();
+  const { selectedPet } = route.params;
+  const { state } = useBLE(); // BLEContext 사용
   const [orientation, setOrientation] = useState('PORTRAIT');
   const [appState, setAppState] = useState(AppState.currentState);
 
@@ -59,7 +60,7 @@ const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
   useEffect(() => {
     console.log('Dashboard mounted - BLE data will be received via BLEContext');
   }, []);
-  
+
   // BLE 데이터 처리는 connectBle.tsx에서 담당하므로 제거
 
   useEffect(() => {
@@ -89,7 +90,7 @@ const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
     <>
       {orientation === 'PORTRAIT' && <Header title="디바이스 모니터링" />}
 
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <DashboardInfo screen={orientation} pet={selectedPet} />
         <DashboardChart screen={orientation} />
         <DashboardData
@@ -100,9 +101,9 @@ const Dashboard = ({route}: {route: DashboardScreenRouteProp}) => {
             tempData: tempData?.value || null,
           }}
         />
+        <PASelector />
         {orientation === 'PORTRAIT' && Platform.OS === "android" ? (
           <View style={styles.portrait_box}>
-            <Image source={require("../assets/images/portrait_able.png")} style={styles.icon_img}/>
           </View>
         ) : (
           ''
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: 'auto',
+    flexGrow: 1,
   },
   ble_box: {
     width: '100%',
@@ -325,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
@@ -344,7 +346,7 @@ const styles = StyleSheet.create({
   },
   portrait_box: {
     width: 100,
-    height: 100,
+    height: 10,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

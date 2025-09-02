@@ -30,6 +30,8 @@ import MypageOut from './Component/mypageOut';
 import Board from './Component/board';
 import BoardDetail from './Component/boardDetail';
 import CustomerService from './Component/customerService';
+import LocalFiles from './Component/localFiles';
+import CsvViewer from './Component/csvViewer';
 import { RootStackParamList } from './types/navigation';
 import DeviceSetup from './Component/DeviceSetup';
 import EditDevice from './Component/EditDevice';
@@ -46,25 +48,25 @@ const AppContent = () => {
 
   const handleRetryConfirm = () => setOpenRetryModal(false);
 
-  const handleUpdate = () => {
-    const url = Platform.OS === 'android'
-      ? 'https://play.google.com/store/apps/details?id=com.talktail'
-      : 'https://apps.apple.com/app/id6746703880';
-    Linking.openURL(url);
-  };
+  // const handleUpdate = () => {
+  //   const url = Platform.OS === 'android'
+  //     ? 'https://play.google.com/store/apps/details?id=com.talktail'
+  //     : 'https://apps.apple.com/app/id6746703880';
+  //   Linking.openURL(url);
+  // };
 
-  useEffect(() => {
-    const check = async () => {
-      try {
-        await checkAppVersion(setShowUpdateModal, setUpdateDate);
-      } catch (e) {
-        console.error('버전 체크 실패:', e);
-      } finally {
-        setVersionChecked(true);
-      }
-    };
-    check();
-  }, []);
+  // useEffect(() => {
+  //   const check = async () => {
+  //     try {
+  //       await checkAppVersion(setShowUpdateModal, setUpdateDate);
+  //     } catch (e) {
+  //       console.error('버전 체크 실패:', e);
+  //     } finally {
+  //       setVersionChecked(true);
+  //     }
+  //   };
+  //   check();
+  // }, []);
 
   // useEffect(() => {
   //   const unsubscribe = navigationRef.addListener('state', () => {
@@ -92,22 +94,22 @@ const AppContent = () => {
     }
   }, [openRetryModal]);
 
-  if (!versionChecked || showUpdateModal) {
-    return (
-      <UpdatePage
-        visible={showUpdateModal}
-        onUpdate={handleUpdate}
-        onClose={() => setShowUpdateModal(false)}
-        updateDate={updateDate}
-      />
-    );
-  }
+  // if (!versionChecked || showUpdateModal) {
+  //   return (
+  //     <UpdatePage
+  //       visible={showUpdateModal}
+  //       onUpdate={handleUpdate}
+  //       onClose={() => setShowUpdateModal(false)}
+  //       updateDate={updateDate}
+  //     />
+  //   );
+  // }
 
   return (
     <>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName="ConnectBle"
           screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFFFF' } }}
         >
           <Stack.Screen name="Intro" component={Intro} />
@@ -129,6 +131,8 @@ const AppContent = () => {
           <Stack.Screen name="Board" component={Board} />
           <Stack.Screen name="BoardDetail" component={BoardDetail} />
           <Stack.Screen name="CustomerService" component={CustomerService} />
+          <Stack.Screen name="LocalFiles" component={LocalFiles} />
+          <Stack.Screen name="CsvViewer" component={CsvViewer} />
           <Stack.Screen name="DeviceSetup" component={DeviceSetup} />
           <Stack.Screen name="EditDevice" component={EditDevice} />
         </Stack.Navigator>
