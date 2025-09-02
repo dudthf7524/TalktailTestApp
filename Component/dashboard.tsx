@@ -17,6 +17,7 @@ import DashboardInfo from './dashboardInfo';
 import DashboardChart from './dashboardChart';
 import DashboardData from './dashboardData';
 import PASelector from './PASelector';
+import DeviceSetting from './deviceSetting';
 import { useBLE } from './BLEContext';
 
 type RootStackParamList = {
@@ -91,7 +92,7 @@ const Dashboard = ({ route }: { route: DashboardScreenRouteProp }) => {
       {orientation === 'PORTRAIT' && <Header title="디바이스 모니터링" />}
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <DashboardInfo screen={orientation} pet={selectedPet} />
+        {/* <DashboardInfo screen={orientation} pet={selectedPet} /> */}
         <DashboardChart screen={orientation} />
         <DashboardData
           screen={orientation}
@@ -102,6 +103,7 @@ const Dashboard = ({ route }: { route: DashboardScreenRouteProp }) => {
           }}
         />
         <PASelector />
+        <DeviceSetting />
         {orientation === 'PORTRAIT' && Platform.OS === "android" ? (
           <View style={styles.portrait_box}>
           </View>
